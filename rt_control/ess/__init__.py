@@ -59,6 +59,8 @@ class EnergyStorageSystem:
 
     def _ingest_state(self, key: str, point_name: str) -> Callable:
         def func(_, __, ___, ____, _____, message):
+            if isinstance(message, list):
+                message = message[0]
             value =  message.get(point_name)
             setattr(self.states, key, value)
         return func
