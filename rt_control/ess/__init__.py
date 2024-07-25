@@ -106,7 +106,9 @@ class EnergyStorageSystem:
             self.controller.vip.rpc.call(self.actuator_vip, self.actuation_method, power_command_topic,
                                          power_command_point, value).get(timeout=5)
         except (Exception, Timeout) as e:
-            _log.warning(f'Failed to set point on ESS: {e}')
+            _log.warning(f'Failed to set point on ESS using actuator: {self.actuator_vip},'
+                         f' method: {self.actuation_method}, power_command_topic: {power_command_topic},'
+                         f' power_command_point: {power_command_point}. Got error: {e}')
 
     @classmethod
     def factory(cls, controller, config):
