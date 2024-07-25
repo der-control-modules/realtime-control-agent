@@ -51,7 +51,7 @@ class RTControlAgent(Agent):
             mode = ControlMode.factory(self, self.ess, self.use_cases, m)
             _log.debug(f'Modes is: {mode}')
             self.modes.append(mode)
-        _log.debug(f'SUBSCRIPTIONS SET UP BY END OF CONFIGURE_MAIN: {self.vip.pubsub.list("pubsub")}')
+        _log.debug(f'SUBSCRIPTIONS SET UP BY END OF CONFIGURE_MAIN: {self.vip.pubsub.list("pubsub").get()}')
         self.core.schedule(periodic(self.resolution.seconds), self.loop)
 
     def add_mode(self, mode):
