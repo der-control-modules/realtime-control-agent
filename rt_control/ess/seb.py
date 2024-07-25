@@ -9,4 +9,5 @@ class SebBESS(EnergyStorageSystem):
 
     @power.setter
     def power(self, value: float):
-        self.controller.vip.rpc.call(self.actuator_vip, self.actuation_method, value, point='real')
+        watts_value = value * 1000
+        self.controller.vip.rpc.call(self.actuator_vip, self.actuation_method, watts_value, point='real')
