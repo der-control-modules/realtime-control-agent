@@ -22,6 +22,7 @@ from rt_control.util import FixedIntervalTimeSeries, SchedulePeriod, VariableInt
 setup_logging()
 _log = logging.getLogger(__name__)
 
+__version__ = 0.1
 
 class RTControlAgent(Agent):
     def __init__(self, config_path, *args, **kwargs):
