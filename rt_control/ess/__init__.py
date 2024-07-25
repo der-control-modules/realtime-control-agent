@@ -103,8 +103,11 @@ class EnergyStorageSystem:
 
     @classmethod
     def factory(cls, controller, config):
-        class_name = config.pop('class_name')
-        module = config.pop('module_name', 'rt_control.ess.' + camel_to_snake(class_name))
+        class_name = config.pop('class_name', 'EnergyStorageSystem')
+        if class_name == 'EnergyStorageSystem':
+            module = 'rt_control.ess'
+        else:
+            module = config.pop('module_name', 'rt_control.ess.' + camel_to_snake(class_name))
         _log.info(f'Configuring class: {class_name} from module: {module}')
         module = import_module(module)
         mode_class = getattr(module, class_name)
