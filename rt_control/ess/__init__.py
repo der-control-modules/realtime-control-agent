@@ -73,7 +73,7 @@ class EnergyStorageSystem:
 
     @property
     def maximum_energy(self) -> float:
-        return self.specs.energy_capacity_kwh
+        return self.specs.energy_capacity_kwh if self.specs.energy_capacity_kwh else 0.0
 
     @property
     def minimum_power(self) -> float:
@@ -81,23 +81,23 @@ class EnergyStorageSystem:
 
     @property
     def maximum_power(self) ->float:
-        return self.specs.power_capacity_kw
+        return self.specs.power_capacity_kw if self.specs.power_capacity_kw else 0.0
 
     @property
     def energy_state(self) -> float:
-        if any(x is None for x in [self.soc, self.specs.energy_capacity_kwh]):
-            return None
-        return self.soc / 100 * self.specs.energy_capacity_kwh
+        # if any(x is None for x in [self.soc, self.specs.energy_capacity_kwh]):
+        #     return None
+        return self.soc / 100 * self.specs.energy_capacity_kwh if self.soc and self.specs.energy_capacity_kwh else 0.0
 
     @property
     def soc(self) -> float:
-        return self.states.soc
+        return self.states.soc if self.states.soc else 0.0
 
     @property
     def power(self) -> float:
-        if self.states.power is None:
-            return None
-        return self.states.power / 1000
+        # if self.states.power is None:
+        #     return None
+        return self.states.power / 1000 if self.states.power else 0.0
 
     @power.setter
     def power(self, value: float):
