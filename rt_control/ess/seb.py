@@ -15,6 +15,7 @@ _log = logging.getLogger(__name__)
 class SebBESS(EnergyStorageSystem):
     def __init__(self, controller, config):
         super(SebBESS, self).__init__(controller, config)
+        _log.debug('######### IS SEB BESS CONSTRUCTOR')
         self.actuator_vip = self.actuator_vip if self.actuator_vip else 'bess.control'
         self.actuation_method = self.actuation_method if self.actuation_method else 'actuate_bess'
 
