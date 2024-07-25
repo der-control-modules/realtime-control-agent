@@ -62,7 +62,7 @@ class EnergyStorageSystem:
             _log.debug(f'Getting point: {point_name} from message: {message}')
             if isinstance(message, list):
                 message = message[0]
-            value =  message.get(point_name, getattr(self.states, point_name))
+            value =  message.get(point_name, getattr(self.states, key))
             setattr(self.states, key, value)
         return func
 
