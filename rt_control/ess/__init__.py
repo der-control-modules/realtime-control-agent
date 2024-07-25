@@ -56,7 +56,6 @@ class EnergyStorageSystem:
             if self.power_reading_point:
                 self.controller.vip.pubsub.subscribe('pubsub', self.bess_topic,
                                                 self._ingest_state(key='power', point_name=self.power_reading_point))
-        _log.debug(f'SUBSCRIPTIONS EXISTING FOR ESS: {self.controller.vip.pubsub.list("pubsub")}')
 
     def _ingest_state(self, key: str, point_name: str) -> Callable:
         def func(_, __, ___, ____, _____, message):
