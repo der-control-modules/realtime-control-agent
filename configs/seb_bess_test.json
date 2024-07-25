@@ -1,0 +1,27 @@
+{
+  "ess": {
+    "class_name": "SebBess",
+    "power_capacity_kw": 100,
+    "energy_capacity_kwh": 125,
+    "bess_topic": "devices/PNNL/SEB/BESS/",
+    "soc_point": "SoC",
+    "power_reading_point": "INV_REAL_PWR"
+  },
+  "modes": [
+    {
+      "name": "ActivePowerResponseName",
+      "class_name": "ActivePowerResponse",
+      "activation_threshold": 10.0,
+      "output_ratio": 1.0,
+      "ramp_params": {}
+    }
+  ],
+  "use_cases": [
+    {
+      "class_name": "PeakLimiting",
+      "realtime_power_topic": "devices/PNNL/SEB/ELECTRIC_METER/WholeBuildingPower"
+    }
+  ],
+  "resolution": 5.0,
+  "start_time": null
+}
