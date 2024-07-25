@@ -93,6 +93,8 @@ class EnergyStorageSystem:
 
     @property
     def power(self) -> float:
+        if self.states.power is None:
+            return None
         return self.states.power / 1000
 
     @power.setter
