@@ -111,5 +111,5 @@ class EnergyStorageSystem:
         _log.info(f'Configuring class: {class_name} from module: {module}')
         module = import_module(module)
         mode_class = getattr(module, class_name)
-        mode = mode_class(controller=controller, **config)
+        mode = mode_class(controller=controller, config=config)
         return mode
