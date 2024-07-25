@@ -48,7 +48,7 @@ class EnergyStorageSystem:
         self.power_reading_point = config.get('power_reading_point')
         self.actuator_vip = config.get('actuator_vip')
         self.actuation_method = config.get('actuation_method')
-        self.actuation_kwargs = config.get('actuation_kwargs')
+        self.actuation_kwargs = config.get('actuation_kwargs', {})
         if self.bess_topic:
             if self.soc_point:
                 self.controller.vip.pubsub.subscribe('pubsub', self.bess_topic,
