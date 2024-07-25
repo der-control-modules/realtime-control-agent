@@ -40,7 +40,7 @@ class RTControlAgent(Agent):
         self.vip.config.subscribe(self.configure_main, ['NEW', 'UPDATE'], 'config')
 
     def configure_main(self, _, __, contents):
-        self.ess: EnergyStorageSystem = EnergyStorageSystem(self, contents.get('ess', {}))
+        self.ess: EnergyStorageSystem = EnergyStorageSystem.factory(self, contents.get('ess', {}))
         self.modes.sort(key=lambda m: m.priority)
         self.resolution = self.wip.resolution = timedelta(seconds=contents.get('resolution', self.resolution.seconds))
         self.use_cases: list[UseCase] = [UseCase.factory(self, u) for u in contents.get('use_cases', self.use_cases)]
