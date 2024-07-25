@@ -83,7 +83,9 @@ class EnergyStorageSystem:
 
     @property
     def energy_state(self) -> float:
-        return self.soc * self.specs.energy_capacity_kwh
+        if any(x is None for x in [self.soc, self.specs.energy_capacity_kwh]):
+            return None
+        return self.soc / 100 * self.specs.energy_capacity_kwh
 
     @property
     def soc(self) -> float:

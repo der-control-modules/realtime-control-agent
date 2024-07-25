@@ -61,6 +61,8 @@ class RTControlAgent(Agent):
 
     def apply_energy_limits(self, power: float, duration: timedelta, min_reserve: float = None,
                             max_reserve: float = None):
+        if self.ess.energy_state is None:
+            return 0.0
         # TODO: Why are we setting energy variables to power?
         min_energy = min_reserve / 100 * self.ess.maximum_power if min_reserve is not None else self.ess.minimum_power
         max_energy = max_reserve / 100 * self.ess.maximum_power if max_reserve is not None else self.ess.maximum_power
