@@ -49,6 +49,7 @@ class EnergyStorageSystem:
         self.actuator_vip = config.get('actuator_vip')
         self.actuation_method = config.get('actuation_method')
         self.actuation_kwargs = config.get('actuation_kwargs', {})
+        self.rounding_precision = config.get('rounding_precision', 2)
         if self.bess_topic:
             if self.soc_point:
                 self.controller.vip.pubsub.subscribe('pubsub', self.bess_topic,
@@ -59,7 +60,6 @@ class EnergyStorageSystem:
 
     def _ingest_state(self, key: str, point_name: str) -> Callable:
         def func(_, __, ___, ____, _____, message):
-            _log.debug(f'Getting point: {point_name} from message: {message}')
             if isinstance(message, list):
                 message = message[0]
             value =  message.get(point_name, getattr(self.states, key))
@@ -100,6 +100,7 @@ class EnergyStorageSystem:
 
     @power.setter
     def power(self, value: float):
+        value = round(value, self.rounding_precision)
         power_command_topic = self.actuation_kwargs.get('power_command_topic', self.bess_topic)
         power_command_point = self.actuation_kwargs.get('power_command_point', self.power_reading_point)
         try:

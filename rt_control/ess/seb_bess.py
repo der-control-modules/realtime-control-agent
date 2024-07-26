@@ -17,11 +17,11 @@ class SebBESS(EnergyStorageSystem):
         super(SebBESS, self).__init__(controller, config)
         _log.debug('######### IS SEB BESS CONSTRUCTOR')
         self.actuator_vip = self.actuator_vip if self.actuator_vip else 'bess.control'
-        self.actuation_method = self.actuation_method if self.actuation_method else 'actuate_bess'
 
     @EnergyStorageSystem.power.setter
     def power(self, value: float):
-        watts_value = value * 1000
+        watts_value = round(value * 1000, self.rounding_precision)
+        actuation_method = 'charge' if watts_value < 0.0 else 'discharge' if watts_value > 0.0 else 'off'
         _log.debug(f'IN SEB POWER SETTER, with ACTUATOR_VIP: {self.actuator_vip},'
                    f' ACTUATION_METHOD: {self.actuation_method}, watts_value: {watts_value}')
-        self.controller.vip.rpc.call(self.actuator_vip, self.actuation_method, watts_value, point='real')
+        self.controller.vip.rpc.call(self.actuator_vip, actuation_method, watts_value, point='real').get()
