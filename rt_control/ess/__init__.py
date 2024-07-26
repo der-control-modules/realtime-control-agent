@@ -47,6 +47,10 @@ class EnergyStorageSystem:
         self.bess_topic = config.get('bess_topic')
         self.soc_point = config.get('soc_point')
         self.power_reading_point = config.get('power_reading_point')
+
+        self.power_command_point = config.get('power_command_point')
+        self.power_command_topic = config.get('power_command_topic', self.bess_topic)
+
         self.actuator_vip = config.get('actuator_vip')
         self.actuation_method = config.get('actuation_method')
         self.actuation_kwargs = config.get('actuation_kwargs', {})
@@ -109,15 +113,13 @@ class EnergyStorageSystem:
     @power_command.setter
     def power_command(self, value: float):
         value = round(value, self.rounding_precision)
-        power_command_topic = self.actuation_kwargs.get('power_command_topic', self.bess_topic)
-        power_command_point = self.actuation_kwargs.get('power_command_point', self.power_reading_point)
         try:
-            self.controller.vip.rpc.call(self.actuator_vip, self.actuation_method, power_command_topic,
-                                         power_command_point, value).get(timeout=5)
+            self.controller.vip.rpc.call(self.actuator_vip, self.actuation_method, self.power_command_topic,
+                                         self.power_command_point, value).get(timeout=5)
         except (Exception, Timeout) as e:
             _log.warning(f'Failed to set point on ESS using actuator: {self.actuator_vip},'
                          f' method: {self.actuation_method}, power_command_topic: {power_command_topic},'
-                         f' power_command_point: {power_command_point}. Got error: {e}')
+                         f' power_command_point: {self.power_command_point}. Got error: {e}')
 
     @classmethod
     def factory(cls, controller, config):
