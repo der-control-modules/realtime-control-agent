@@ -100,7 +100,8 @@ class RTControlAgent(Agent):
                        f' Setting!')
             self.ess.power_command = command[0]  # Writing to power actuates.
         else:
-            _log.debug(f'Skipping actuation, command: {command[0]} already matches ess.power: {self.ess.power}.')
+            _log.debug(f'Skipping actuation, command: {command[0]} already matches ess.power_command:'
+                       f' {self.ess.power_command}.')
 
 
 def main():
