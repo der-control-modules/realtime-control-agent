@@ -5,7 +5,8 @@
     "energy_capacity_kwh": 200.0,
     "bess_topic": "devices/PNNL/SEB/BESS/",
     "soc_point": "BAT_SOC",
-    "power_reading_point": "INV_REAL_PWR"
+    "power_reading_point": "INV_REAL_PWR",
+    "power_command_point": "INV_REAL_PWR_REQ"
   },
   "modes": [
     {
