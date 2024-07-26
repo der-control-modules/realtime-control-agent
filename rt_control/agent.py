@@ -95,9 +95,10 @@ class RTControlAgent(Agent):
         now = get_aware_utc_now()
         current_schedule_period = next(filter(lambda s: s.t_start < now < s.end_time, self.schedule), 0.0)
         command = self.control(current_schedule_period, now, VariableIntervalTimeSeries())  # TODO: Implement something for SP_Progress?
-        if self.ess.power != command[0]: # Reading from power gets last received value from ESS.
-            _log.debug(f'self.ess.power: {self.ess.power} is not the same as new command: {command[0]}. Setting!')
-            self.ess.power = command[0]  # Writing to power actuates.
+        if self.ess.power_command != command[0]: # Reading from power gets last received value from ESS.
+            _log.debug(f'self.ess.power_command: {self.ess.power_command} is not the same as new command: {command[0]}.'
+                       f' Setting!')
+            self.ess.power_command = command[0]  # Writing to power actuates.
         else:
             _log.debug(f'Skipping actuation, command: {command[0]} already matches ess.power: {self.ess.power}.')
 

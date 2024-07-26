@@ -35,6 +35,7 @@ class ESSStates:
         self.soc: float = 0.0
         self.d: float = 0.0
         self.power: float = 0.0
+        self.power_command: float = 0.0
 
 
 class EnergyStorageSystem:
@@ -57,6 +58,9 @@ class EnergyStorageSystem:
             if self.power_reading_point:
                 self.controller.vip.pubsub.subscribe('pubsub', self.bess_topic,
                                                 self._ingest_state(key='power', point_name=self.power_reading_point))
+            if self.power_command_point:
+                self.controller.vip.pubsub.subscribe('pubsub', self.bess_topic,
+                                                self._ingest_state(key='power_command', point_name=self.power_command_point))
 
     def _ingest_state(self, key: str, point_name: str) -> Callable:
         def func(_, __, ___, ____, _____, message):
@@ -98,8 +102,12 @@ class EnergyStorageSystem:
         #     return None
         return self.states.power / 1000 if self.states.power else 0.0
 
-    @power.setter
-    def power(self, value: float):
+    @property
+    def power_command(self) -> float:
+        return self.states.power_command / 1000 if self.states.power_command else 0.0
+
+    @power_command.setter
+    def power_command(self, value: float):
         value = round(value, self.rounding_precision)
         power_command_topic = self.actuation_kwargs.get('power_command_topic', self.bess_topic)
         power_command_point = self.actuation_kwargs.get('power_command_point', self.power_reading_point)

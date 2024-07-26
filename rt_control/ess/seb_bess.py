@@ -18,8 +18,8 @@ class SebBESS(EnergyStorageSystem):
         _log.debug('######### IS SEB BESS CONSTRUCTOR')
         self.actuator_vip = self.actuator_vip if self.actuator_vip else 'bess.control'
 
-    @EnergyStorageSystem.power.setter
-    def power(self, value: float):
+    @EnergyStorageSystem.power_command.setter
+    def power_command(self, value: float):
         watts_value = round(value * 1000, self.rounding_precision)
         actuation_method = 'charge' if watts_value < 0.0 else 'discharge' if watts_value > 0.0 else 'off'
         _log.debug(f'IN SEB POWER SETTER, with ACTUATOR_VIP: {self.actuator_vip},'
