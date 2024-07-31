@@ -20,13 +20,15 @@ class UseCase:
         self.controller = controller
         self.states = {}
 
-    def _ingest_state(self, key: str, point_name: str) -> Callable:
-        def func(_, __, ___, ____, _____, message):
-            _log.debug(f'Getting point: {point_name} from message: {message}')
+    def _ingest_state(self, key: str, point_name: str, default: any = 0.0) -> Callable:
+        self.states[key] = default
+        def func(_, __, ___, topic, _____, message):
+            _log.debug(f'Getting point: {point_name} from topic: {topic} with message: {message}')
             if isinstance(message, list):
                 message = message[0]
             value = message.get(point_name)
-            self.states[key] = value
+            if value is not None and value != self.states[key]:
+                self.states[key] = value
         return func
 
     @classmethod
