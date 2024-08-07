@@ -41,7 +41,6 @@ class RTControlAgent(Agent):
 
     def configure_main(self, _, __, contents):
         self.ess: EnergyStorageSystem = EnergyStorageSystem.factory(self, contents.get('ess', {}))
-        self.modes.sort(key=lambda m: m.priority)
         self.resolution = self.wip.resolution = timedelta(seconds=contents.get('resolution', self.resolution.seconds))
         self.use_cases: list[UseCase] = [UseCase.factory(self, u) for u in contents.get('use_cases', self.use_cases)]
         time_string = contents.get('start_time')
@@ -51,6 +50,7 @@ class RTControlAgent(Agent):
             mode = ControlMode.factory(self, self.ess, self.use_cases, m)
             _log.debug(f'Modes is: {mode}')
             self.modes.append(mode)
+        self.modes.sort(key=lambda md: md.priority)
         self.core.schedule(periodic(self.resolution.seconds), self.loop)
 
     def add_mode(self, mode):
