@@ -24,5 +24,5 @@ class SebBESS(EnergyStorageSystem):
         actuation_method = 'charge' if watts_value < 0.0 else 'discharge' if watts_value > 0.0 else 'off'
         _log.debug(f'IN SEB POWER SETTER, with ACTUATOR_VIP: {self.actuator_vip},'
                    f' ACTUATION_METHOD: {actuation_method}, watts_value: {watts_value}')
-        kwargs = {'value': abs(watts_value), 'point': 'real'} if actuation_method in ['charge', 'discharge'] else {}
+        kwargs = {'value': int(abs(watts_value)), 'point': 'real'} if actuation_method in ['charge', 'discharge'] else {}
         self.controller.vip.rpc.call(self.actuator_vip, actuation_method, **kwargs).get()

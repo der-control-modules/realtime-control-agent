@@ -39,10 +39,12 @@ class ActivePowerResponse(MesaMode):
         elif gen_following or load_following or peak_limiting:
             _log.error('Disallowed set of UseCases: Only one of "PeakLimiting", "LoadFollowing",'
                        ' and "GenerationFollowing" may be used with the MESA Active Response Mode.')
+            reference_power = 0.0
             power_past_limit = 0.0
         else:
             _log.error('MESA Active Response Mode requires exactly one of "PeakLimiting, "LoadFollowing,'
                        ' or "GenerationFollowing" to be provided as a use case.')
+            reference_power = 0.0
             power_past_limit = 0.0
 
         _log.debug(f'In control, the reference power is: {reference_power} and the power_past_limit is: {power_past_limit}')
