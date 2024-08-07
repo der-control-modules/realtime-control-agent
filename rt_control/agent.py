@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from importlib.metadata import version
 
 if int(version('volttron').split('.')[0]) >= 10:
-    from volttron.client.vip.agent import Agent
+    from volttron.client.vip.agent import Agent, Core
     from volttron.utils import get_aware_utc_now, load_config, parse_timestamp_string, setup_logging, vip_main
     from volttron.utils.scheduling import periodic
 else:
@@ -103,6 +103,9 @@ class RTControlAgent(Agent):
             _log.debug(f'Skipping actuation, command: {command[0]} already matches ess.power_command:'
                        f' {self.ess.power_command}.')
 
+    @Core.receiver('onstop')
+    def on_stop(self):
+        self.ess.stop()
 
 def main():
     """Main method called by the app."""

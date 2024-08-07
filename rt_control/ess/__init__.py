@@ -121,6 +121,9 @@ class EnergyStorageSystem:
                          f' method: {self.actuation_method}, power_command_topic: {power_command_topic},'
                          f' power_command_point: {self.power_command_point}. Got error: {e}')
 
+    def stop(self):
+        self.power_command = 0.0
+
     @classmethod
     def factory(cls, controller, config):
         class_name = config.pop('class_name', 'EnergyStorageSystem')
