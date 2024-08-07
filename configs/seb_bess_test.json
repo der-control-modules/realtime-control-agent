@@ -10,11 +10,17 @@
   },
   "modes": [
     {
+      "name": "ChargeDischargeStorage",
+      "class_name": "ChargeDischargeStorage",
+      "priority": 1
+    },
+    {
       "name": "ActivePowerResponseName",
       "class_name": "ActivePowerResponse",
       "activation_threshold": 120.0,
       "output_ratio": 1.0,
-      "ramp_params": {}
+      "ramp_params": {},
+      "priority": 2
     }
   ],
   "use_cases": [

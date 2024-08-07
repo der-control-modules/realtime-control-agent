@@ -12,7 +12,7 @@ else:
     from volttron.platform.agent.utils import (get_aware_utc_now, load_config, parse_timestamp_string, setup_logging,\
         vip_main)
     from volttron.platform.scheduling import periodic
-    from volttron.platform.vip.agent import Agent
+    from volttron.platform.vip.agent import Agent, Core
 
 from rt_control.ess import EnergyStorageSystem
 from rt_control.modes import ControlMode
