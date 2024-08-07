@@ -122,6 +122,7 @@ class EnergyStorageSystem:
                          f' power_command_point: {self.power_command_point}. Got error: {e}')
 
     def stop(self):
+        _log.debug('Stopping ESS.')
         self.power_command = 0.0
 
     @classmethod

@@ -105,6 +105,7 @@ class RTControlAgent(Agent):
 
     @Core.receiver('onstop')
     def on_stop(self):
+        _log.debug('In on_stop method.')
         self.ess.stop()
 
 def main():
