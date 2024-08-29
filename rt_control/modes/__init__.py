@@ -7,9 +7,9 @@ from typing import Iterable
 
 from importlib.metadata import version
 if int(version('volttron').split('.')[0]) >= 10:
-    from volttron.utils import setup_logging
+    from volttron.utils import setup_logging, get_aware_utc_now
 else:
-    from volttron.platform.agent.utils import setup_logging
+    from volttron.platform.agent.utils import setup_logging, get_aware_utc_now
 
 from rt_control.ess import EnergyStorageSystem
 from rt_control.use_cases import UseCase
@@ -21,6 +21,7 @@ _log = logging.getLogger(__name__)
 
 class ControlMode:
     def __init__(self, controller, ess: EnergyStorageSystem, use_cases: Iterable[UseCase], priority: int = 0, *_, **__):
+        self.config = {}
         self.controller = controller
         self.ess: EnergyStorageSystem = ess
         self.priority: int = priority
@@ -44,6 +45,7 @@ class ControlMode:
         module = import_module(module)
         mode_class = getattr(module, class_name)
         mode = mode_class(controller=controller, ess=ess, use_cases=use_cases, **config)
+        mode.config = config
         return mode
 
 

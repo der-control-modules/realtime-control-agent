@@ -17,18 +17,13 @@ _log = logging.getLogger(__name__)
 
 
 class ESSSpecs:
-    def __init__(self, power_capacity_kw: float = 0.0, energy_capacity_kwh: float = 0.0):
-        self.power_capacity_kw: float = power_capacity_kw
-        self.energy_capacity_kwh: float = energy_capacity_kwh
-        # self.tset_degree_c::Float64 =
-        # self.C0::Float64 = # self-discharge coefficient
-        # self.C0Hot::Float64 = # self-discharge coefficient adjustment when ambient temperature is higher than Tset
-        # self.C0Cold::Float64 = # self-discharge coefficient adjustment when ambient temperature is lower than Tset
-        # self.C_p::Float64 = # discharging efficiency
-        # self.C_n::Float64 = # charging efficiency
-        # self.H_p::Float64 = # discharging efficiency degradation coef
-        # self.H_n::Float64 =  # charging efficiency degradation coef
-        # self.D::NTuple{3, Float64}  = # degradation coefficients
+    def __init__(self, power_capacity_kw: float = 0.0, energy_capacity_kwh: float = 0.0, efficiency=1.0):
+        self.power_capacity_kw: float = float(power_capacity_kw)
+        self.energy_capacity_kwh: float = float(energy_capacity_kwh)
+        self.efficiency = float(efficiency)
+
+    def dump(self):
+        return self.power_capacity_kw, self.energy_capacity_kwh, self.efficiency
 
 class ESSStates:
     def __init__(self):
@@ -36,6 +31,9 @@ class ESSStates:
         self.d: float = 0.0
         self.power: float = 0.0
         self.power_command: float = 0.0
+
+    def dump(self):
+        return self.soc,  # Note: The comma is necessary to return a tuple.
 
 
 class EnergyStorageSystem:

@@ -5,14 +5,14 @@ from datetime import datetime, timedelta
 from importlib.metadata import version
 
 if int(version('volttron').split('.')[0]) >= 10:
-    from volttron.client.vip.agent import Agent, Core
+    from volttron.client.vip.agent import Agent, Core, RPC
     from volttron.utils import get_aware_utc_now, load_config, parse_timestamp_string, setup_logging, vip_main
     from volttron.utils.scheduling import periodic
 else:
     from volttron.platform.agent.utils import (get_aware_utc_now, load_config, parse_timestamp_string, setup_logging,\
         vip_main)
     from volttron.platform.scheduling import periodic
-    from volttron.platform.vip.agent import Agent, Core
+    from volttron.platform.vip.agent import Agent, Core, RPC
 
 from rt_control.ess import EnergyStorageSystem
 from rt_control.modes import ControlMode
@@ -53,10 +53,27 @@ class RTControlAgent(Agent):
         self.modes.sort(key=lambda md: md.priority)
         self.core.schedule(periodic(self.resolution.seconds), self.loop)
 
-    def add_mode(self, mode):
-        self.modes = sorted(self.modes + [mode], key=lambda m: m.priority)
+    @RPC.export
+    def add_mode(self, mode: dict, persistent: bool = False):
+        if not persistent:
+            # TODO: Need logic to check for duplication.
+            # TODO: mode shouldn't be a dict, it is a mode class. How to organize this instead? Separate out RPC?
+            self.modes = sorted(self.modes + [mode], key=lambda m: m.priority)
+        else:
+            config_file = self.vip.config.get('config')
+            configured_modes = config_file.get('modes', {})
+            # config_file['modes'] = configured_modes. # TODO: What was this partially finished line?
 
-    def remove_mode(self, mode):
+    @RPC.export
+    def list_modes(self, persistent=False):
+        if not persistent:
+            return [m.config for m in self.modes]
+        else:
+            config_file = self.vip.config.get('config')
+            return config_file.get('modes')
+
+    @RPC.export
+    def remove_mode(self, mode: str, persistent: bool = False):
         self.modes = [m for m in self.modes if m.__class__ != mode]
 
     def apply_energy_limits(self, power: float, duration: timedelta, min_reserve: float = None,

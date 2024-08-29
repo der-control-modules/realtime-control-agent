@@ -1,6 +1,12 @@
 import re
 
 from datetime import datetime, timedelta
+from typing import Union
+
+if int(version('volttron').split('.')[0]) >= 10:
+    from volttron.utils import parse_timestamp_string
+else:
+    from volttron.platform.agent.utils import parse_timestamp_string
 
 first_cap_re = re.compile('(.)([A-Z][a-z]+)')
 all_cap_re = re.compile('([a-z\d])([A-Z])')
@@ -20,17 +26,27 @@ class FixedIntervalTimeSeries(list):
 
 
 class VariableIntervalTimeSeries:
-    pass
+    def __init__(self, t: list[datetime], value: list[any]):
+        self.t = t
+        self.value = value
+
+    def dump(self):
+        return self.t, self.value
 
 
 class SchedulePeriod:
-    def __init__(self, p, t_start, duration=timedelta(hours=1), soc_start=0.0, soc_end=0.0):
+    def __init__(self, p: float, t_start: Union[datetime, str], duration: Union[timedelta, float] = timedelta(hours=1),
+                 soc_start: float = 0.0, soc_end: float = 0.0, reg_cap_kw: float = 0.0):
         self.p: float = p
-        self.t_start: datetime = t_start
-        self.duration: timedelta = duration
+        self.t_start: datetime = t_start if isinstance(t_start, datetime) else parse_timestamp_string(t_start)
+        self.duration: timedelta = timedelta(seconds=duration) if not isinstance(duration, timedelta) else duration
         self.soc_start: float = soc_start
         self.soc_end: float = soc_end
+        self.reg_cap_kw: float = reg_cap_kw
 
     @property
     def end_time(self):
         return self.t_start + self.duration
+
+    def dump(self):
+        return self.p, self.t_start, self.duration, self.soc_start, self.soc_end, self.reg_cap_kw

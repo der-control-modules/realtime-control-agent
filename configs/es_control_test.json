@@ -1,0 +1,34 @@
+{
+  "ess": {
+    "class_name": "FakeESS",
+    "power_capacity_kw": 100.0,
+    "energy_capacity_kwh": 200.0,
+    "bess_topic": "devices/PNNL/SEB/BESS/all",
+    "soc_point": "BAT_SOC",
+    "power_reading_point": "INV_REAL_PWR",
+    "power_command_point": "INV_REAL_PWR_REQ"
+  },
+  "modes": [
+    {
+      "name": "ChargeDischargeStorage",
+      "class_name": "ChargeDischargeStorage",
+      "priority": 1
+    }
+  ],
+  "schedule": [
+    {"p": 50.0, "t_start":  "2024-08-29T11:00:00"},
+    {"p": 60.0, "t_start":  "2024-08-29T12:00:00"},
+    {"p": 70.0, "t_start":  "2024-08-29T13:00:00"},
+    {"p": 80.0, "t_start":  "2024-08-29T14:00:00"}
+  ],
+  "use_cases": [
+    {
+      "class_name": "EnergyArbitrage",
+      "realtime_power_topic": "devices/PNNL/SEB/ELECTRIC_METER/all",
+      "realtime_power_point": "WholeBuildingPower",
+      "subscribe_all_platforms": true
+    }
+  ],
+  "resolution": 5.0,
+  "start_time": null
+}
