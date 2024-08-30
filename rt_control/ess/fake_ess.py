@@ -1,5 +1,7 @@
 import logging
 
+from importlib.metadata import version
+
 if int(version('volttron').split('.')[0]) >= 10:
     from volttron.utils import setup_logging
 else:
