@@ -1,7 +1,8 @@
 import re
 
 from datetime import datetime, timedelta
-from typing import Union
+from importlib.metadata import version
+from typing import List,    Union
 
 if int(version('volttron').split('.')[0]) >= 10:
     from volttron.utils import parse_timestamp_string
@@ -26,9 +27,10 @@ class FixedIntervalTimeSeries(list):
 
 
 class VariableIntervalTimeSeries:
-    def __init__(self, t: list[datetime], value: list[any]):
-        self.t = t
-        self.value = value
+    def __init__(self, t: list[datetime] = None, value: list[any] = None):
+        # TODO: Is it valid to init this with two empty lists?
+        self.t = t if t else []
+        self.value = value if value else []
 
     def dump(self):
         return self.t, self.value
