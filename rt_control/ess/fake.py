@@ -10,6 +10,10 @@ setup_logging()
 _log = logging.getLogger(__name__)
 
 class FakeESS(EnergyStorageSystem):
+    def __init__(self, controller, config):
+        super(FakeESS, self).__init__(controller, config)
+        _log.debug('######### IN Fake ESS CONSTRUCTOR')
+
     @EnergyStorageSystem.power_command.setter
     def power_command(self, value: float):
         _log.debug(f'Actuating command of: {value}')
