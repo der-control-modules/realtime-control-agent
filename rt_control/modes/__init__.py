@@ -26,7 +26,7 @@ class ControlMode:
         self.ess: EnergyStorageSystem = ess
         self.priority: int = priority
         self.use_cases = use_cases
-        self.wip: list = []
+        self.wip: list = [] # TODO: Does this grow forever? That would be bad....
 
     @abc.abstractmethod
     def control(self, schedule_period, start_time, sp_progress) -> float:
@@ -102,3 +102,11 @@ class RampParams:
         # timeUntilEnd = endTime - currentTime
         allowed_power_change = 0.0
         return current_power + allowed_power_change
+
+class Vertex:
+    def __init__(self, x: float, y: float):
+        self.x = x
+        self.y = y
+
+    def dump(self):
+        return self.x, self.y
