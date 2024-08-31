@@ -1,3 +1,4 @@
+import abc
 import logging
 
 from typing import Callable
@@ -40,6 +41,12 @@ class UseCase:
         mode_class = getattr(module, class_name)
         mode = mode_class(controller=controller, **config)
         return mode
+
+    @abc.abstractmethod
+    def to_julia(self):
+        from julia.api import LibJulia
+        api = LibJulia.load(julia='/home/volttron/PyJuliaTesting/julia-1.10.4/bin/julia')
+        api.init_julia(['--project=/home/volttron/PyJuliaTesting/ctrl-eval-engine-app'])
 
 from rt_control.use_cases.generation_following import GenerationFollowing
 from rt_control.use_cases.load_following import LoadFollowing
