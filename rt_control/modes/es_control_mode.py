@@ -10,6 +10,7 @@ else:
     from volttron.platform.agent.utils import setup_logging, get_aware_utc_now
 
 from rt_control.modes import ControlMode
+from rt_control.util import FixedIntervalTimeSeries
 
 from julia.api import LibJulia
 api = LibJulia.load(julia='/home/volttron/PyJuliaTesting/julia-1.10.4/bin/julia')
@@ -25,7 +26,7 @@ class ESControlMode(ControlMode):
     def __init__(self, *args, **kwargs):
         super(ESControlMode, self).__init__(*args, **kwargs)
 
-    def control(self, schedule_period, start_time, sp_progress) -> float:
+    def control(self, schedule_period, start_time, sp_progress) -> FixedIntervalTimeSeries:
         # TODO: Should this really be the start_time? Should it be created on each control call?
         sp_progress = VariableIntervalTimeSeries([start_time], []) # TODO: Should this be an instance variable?
         ess = MockSimulator(MockES_Specs(*self.ess.specs.dump()), MockES_States(*self.ess.states.dump()))
@@ -37,7 +38,7 @@ class ESControlMode(ControlMode):
         controller = CtrlEvalEngine.EnergyStorageRTControl.MesaController([mode], Dates.Minute(5))
         # TODO: Should this be calling the controller or mode control function?
         output = CtrlEvalEngine.control(ess, controller, schedule_period, use_cases, start_time, sp_progress)
-        return output
+        return output.value[0]  # TODO: Is there really a use for returning a FixedIntervalTimeSeries as in ESControl?
 
     def _get_julia_use_cases_vector(self, now):
         # TODO: This is hard coded for testing. Replace this with something useful.
