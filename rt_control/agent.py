@@ -33,7 +33,8 @@ class RTControlAgent(Agent):
         self.ess: EnergyStorageSystem = EnergyStorageSystem.factory(self, {})
         self.modes: list[ControlMode] = []
         self.resolution: timedelta = timedelta(seconds=1.0)
-        self.schedule: list[SchedulePeriod] = [SchedulePeriod(**c) for c in config.get('schedule', [])]
+        self.schedule: list[SchedulePeriod] = []  # SchedulePeriod(**c) for c in config.get('schedule', [])]
+        self.schedule_topic = None
         self.use_cases = []
         self.wip: FixedIntervalTimeSeries = FixedIntervalTimeSeries(get_aware_utc_now(), 0.0)
 
@@ -44,6 +45,7 @@ class RTControlAgent(Agent):
         self.resolution = self.wip.resolution = timedelta(seconds=contents.get('resolution', self.resolution.seconds))
         self.use_cases: list[UseCase] = [UseCase.factory(self, u) for u in contents.get('use_cases', self.use_cases)]
         time_string = contents.get('start_time')
+        self.schedule_topic = contents.get('schedule_topic')
         self.wip.start_time = parse_timestamp_string(time_string) if time_string else get_aware_utc_now()
 
         for m in contents.get('modes', self.modes):
@@ -51,7 +53,14 @@ class RTControlAgent(Agent):
             _log.debug(f'Modes is: {mode}')
             self.modes.append(mode)
         self.modes.sort(key=lambda md: md.priority)
+
+        if self.schedule_topic:
+            self.vip.pubsub.subscribe('pubsub', self.schedule_topic, self.ingest_schedule)
         self.core.schedule(periodic(self.resolution.seconds), self.loop)
+
+    def ingest_schedule(self, peer, sender, bus,  topic, headers, message):
+        # TODO: Parse the message received into self.schedule.
+        pass
 
     @RPC.export
     def add_mode(self, mode: dict, persistent: bool = False):
