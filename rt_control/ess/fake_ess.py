@@ -19,4 +19,6 @@ class FakeESS(EnergyStorageSystem):
     @EnergyStorageSystem.power_command.setter
     def power_command(self, value: float):
         _log.debug(f'Actuating command of: {value}')
-        self.states.power = value  # Sets the value without
+        # Store the power command as the power and power_command.
+        self.states.power = value
+        self.states.power_command = value
