@@ -110,7 +110,9 @@ class RTControlAgent(Agent):
 
     def loop(self):
         now = get_aware_utc_now()
-        current_schedule_period = next(filter(lambda s: s.t_start < now < s.end_time, self.schedule), 0.0)
+        current_schedule_period = next(
+            filter(lambda s: s.t_start < now < s.end_time, self.schedule), SchedulePeriod(0.0, now)
+        )
         command = self.control(current_schedule_period, now, VariableIntervalTimeSeries())  # TODO: Implement something for SP_Progress?
         if self.ess.power_command != command[0]: # Reading from power gets last received value from ESS.
             _log.debug(f'self.ess.power_command: {self.ess.power_command} is not the same as new command: {command[0]}.'
