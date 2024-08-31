@@ -14,8 +14,9 @@ from rt_control.modes import ControlMode
 from julia.api import LibJulia
 api = LibJulia.load(julia='/home/volttron/PyJuliaTesting/julia-1.10.4/bin/julia')
 api.init_julia(['--project=/home/volttron/PyJuliaTesting/ctrl-eval-engine-app'])
-from julia import CtrlEvalEngine, Dates, MockSimulator, SchedulePeriod, VariableIntervalTimeSeries
-from julia.CtrlEvalEngine.EnergyStorageSimulators import MockES_Specs, MockES_States
+from julia import CtrlEvalEngine, Dates
+from julia.CtrlEvalEngine import SchedulePeriod, VariableIntervalTimeSeries
+from julia.CtrlEvalEngine.EnergyStorageSimulators import MockSimulator, MockES_Specs, MockES_States
 
 setup_logging()
 _log = logging.getLogger(__name__)
