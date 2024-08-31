@@ -25,6 +25,9 @@ class FixedIntervalTimeSeries(list):
         self.start_time: datetime = start_time
         self.resolution: timedelta = resolution
 
+    def dump(self):
+        return self.start_time, self.resolution, self
+
 
 class VariableIntervalTimeSeries:
     def __init__(self, t: List[datetime] = None, value: List[any] = None):
