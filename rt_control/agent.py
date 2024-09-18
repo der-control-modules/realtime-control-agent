@@ -58,9 +58,19 @@ class RTControlAgent(Agent):
             self.vip.pubsub.subscribe('pubsub', self.schedule_topic, self.ingest_schedule)
         self.core.schedule(periodic(self.resolution.seconds), self.loop)
 
-    def ingest_schedule(self, peer, sender, bus,  topic, headers, message):
-        # TODO: Parse the message received into self.schedule.
-        pass
+    def ingest_schedule(self, _, sender, __,  topic, headers, message):
+        for dt_string, period in message.items():
+            dt = parse_timestamp_string(dt_string)
+            set_point = message.get('bess_setpoints')
+            duration = timedelta(seconds=message.get('duration_in_seconds', 3600))
+            if not (dt and set_point):
+                _log.warning(f'Unable to ingest published schedule on {topic} from {sender}'
+                             f' for forecast_time: {dt}, message: {message}')
+            else:
+                self.schedule.append(SchedulePeriod(p=set_point, t_start=dt, duration=duration))
+            for i, s in enumerate(self.schedule):
+                if s.t_start < get_aware_utc_now():
+                    del self.schedule[i]
 
     @RPC.export
     def add_mode(self, mode: dict, persistent: bool = False):
