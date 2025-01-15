@@ -61,8 +61,8 @@ class RTControlAgent(Agent):
     def ingest_schedule(self, _, sender, __,  topic, headers, message):
         for dt_string, period in message.items():
             dt = parse_timestamp_string(dt_string)
-            set_point = period.get('bess_setpoints')
-            duration = timedelta(seconds=period.get('duration_in_seconds', 3600))
+            set_point = period.get('total_power')
+            duration = timedelta(seconds=period.get('duration_in_second', 3600))
             if not (dt and set_point):
                 _log.warning(f'Unable to ingest published schedule on {topic} from {sender}'
                              f' for forecast_time: {dt}, message: {message}')
@@ -71,6 +71,7 @@ class RTControlAgent(Agent):
             for i, s in enumerate(self.schedule):
                 if s.t_start < get_aware_utc_now():
                     del self.schedule[i]
+        _log.info(f'Scheduling information received from subscription. Schedule is now: {self.schedule}')
 
     @RPC.export
     def add_mode(self, mode: dict, persistent: bool = False):
