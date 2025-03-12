@@ -18,7 +18,7 @@ exclude = ['docs/']
 
 [tool.poetry]
 name = "volttron-realtime-control"
-version = "2.2.1"
+version = "0.2"
 description = ""
 authors = ["David Raker <david.raker@pnnl.gov>"]
 license = "Apache License 2.0"
