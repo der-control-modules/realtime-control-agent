@@ -4,10 +4,11 @@ import logging
 from typing import Callable
 from importlib import import_module
 
-from importlib.metadata import version
-if int(version('volttron').split('.')[0]) >= 10:
-    from volttron.utils import setup_logging
-else:
+from importlib.metadata import distribution, PackageNotFoundError
+try:
+    distribution('volttron-core')
+    from volttron.client.logs import setup_logging
+except PackageNotFoundError:
     from volttron.platform.agent.utils import setup_logging
 
 from rt_control.util import camel_to_snake

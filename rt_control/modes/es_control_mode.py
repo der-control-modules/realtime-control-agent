@@ -1,10 +1,13 @@
 import abc
 import logging
 
-from importlib.metadata import version
-if int(version('volttron').split('.')[0]) >= 10:
-    from volttron.utils import setup_logging
-else:
+from julia import Dates
+
+from importlib.metadata import distribution, PackageNotFoundError
+try:
+    distribution('volttron-core')
+    from volttron.client.logs import setup_logging
+except PackageNotFoundError:
     from volttron.platform.agent.utils import setup_logging
 
 from rt_control.modes import ControlMode

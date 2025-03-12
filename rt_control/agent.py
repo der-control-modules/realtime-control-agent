@@ -2,13 +2,15 @@ import logging
 import sys
 
 from datetime import datetime, timedelta
-from importlib.metadata import version
 
-if int(version('volttron').split('.')[0]) >= 10:
+from importlib.metadata import distribution, PackageNotFoundError
+try:
+    distribution('volttron-core')
+    from volttron.client.logs import setup_logging
     from volttron.client.vip.agent import Agent, Core, RPC
-    from volttron.utils import get_aware_utc_now, load_config, parse_timestamp_string, setup_logging, vip_main
+    from volttron.utils import get_aware_utc_now, load_config, parse_timestamp_string, vip_main
     from volttron.utils.scheduling import periodic
-else:
+except PackageNotFoundError:
     from volttron.platform.agent.utils import (get_aware_utc_now, load_config, parse_timestamp_string, setup_logging,\
         vip_main)
     from volttron.platform.scheduling import periodic

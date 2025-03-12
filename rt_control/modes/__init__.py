@@ -5,10 +5,12 @@ from datetime import datetime, timedelta
 from importlib import import_module
 from typing import Iterable
 
-from importlib.metadata import version
-if int(version('volttron').split('.')[0]) >= 10:
-    from volttron.utils import setup_logging, get_aware_utc_now
-else:
+from importlib.metadata import distribution, PackageNotFoundError
+try:
+    distribution('volttron-core')
+    from volttron.client.logs import setup_logging
+    from volttron.utils import get_aware_utc_now
+except PackageNotFoundError:
     from volttron.platform.agent.utils import setup_logging, get_aware_utc_now
 
 from rt_control.ess import EnergyStorageSystem
