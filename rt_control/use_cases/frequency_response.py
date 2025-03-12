@@ -17,11 +17,8 @@ class FrequencyResponse(UseCase):
     def metered_frequency(self):
         return self.states.get('metered_frequency', 0.0)
 
-    def to_julia(self):
-        super(FrequencyResponse, self).to_julia()
-        from julia.CtrlEvalEngine import FixedIntervalTimeSeries
-        from julia.CtrlEvalEngine import EnergyStorageUseCases
-        return EnergyStorageUseCases.FrequencyResponse(
-            FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.metered_frequency]),
+    def to_julia(self, cee):
+        return cee.EnergyStorageUseCases.FrequencyResponse(
+            cee.FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.metered_frequency]),
             self.nominal_frequency
         )

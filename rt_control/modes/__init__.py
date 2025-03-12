@@ -46,6 +46,11 @@ class ControlMode:
         _log.info(f'Configuring class: {class_name} from module: {module}')
         module = import_module(module)
         mode_class = getattr(module, class_name)
+        if 'ESControlMode' in str(mode_class.__mro__):
+            if controller.cee_app_path:
+                config['ctrl_eval_engine_app_path'] = controller.cee_app_path
+            if controller.julia_path:
+                config['julia_path'] = controller.julia_path
         mode = mode_class(controller=controller, ess=ess, use_cases=use_cases, **config)
         mode.config = config
         return mode

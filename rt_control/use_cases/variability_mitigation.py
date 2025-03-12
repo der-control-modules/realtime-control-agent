@@ -21,11 +21,8 @@ class VariabilityMitigation(UseCase):
     def metered_power(self):
         return self.states.get('metered_power', 0.0)
 
-    def to_julia(self):
-        super(VariabilityMitigation, self).to_julia()
-        from julia.CtrlEvalEngine import FixedIntervalTimeSeries
-        from julia.CtrlEvalEngine import EnergyStorageUseCases
-        return EnergyStorageUseCases.VariabilityMitigation(
-            FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.forecast_power]),
+    def to_julia(self, cee):
+        return cee.EnergyStorageUseCases.VariabilityMitigation(
+            cee.FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.forecast_power]),
             self.rated_power_kw
         )

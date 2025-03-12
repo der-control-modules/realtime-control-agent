@@ -1,4 +1,5 @@
 {
+  "ctrl_eval_engine_app_path": "/home/dmr/Projects/DERControl/ControlAgent/scratch/ctrl-eval-engine-app",
   "ess": {
     "class_name": "FakeESS",
     "power_capacity_kw": 100.0,
@@ -22,12 +23,6 @@
     {"p": 80.0, "t_start":  "2024-08-29T14:00:00"}
   ],
   "use_cases": [
-    {
-      "class_name": "EnergyArbitrage",
-      "realtime_power_topic": "devices/PNNL/SEB/ELECTRIC_METER/all",
-      "realtime_power_point": "WholeBuildingPower",
-      "subscribe_all_platforms": true
-    }
   ],
   "resolution": 5.0,
   "start_time": null

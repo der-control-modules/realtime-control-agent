@@ -21,11 +21,8 @@ class VoltageControl(UseCase):
     def metered_voltage(self):
         return self.states.get('metered_voltage', 0.0)
 
-    def to_julia(self):
-        super(VoltageControl, self).to_julia()
-        from julia.CtrlEvalEngine import FixedIntervalTimeSeries
-        from julia.CtrlEvalEngine import EnergyStorageUseCases
-        return EnergyStorageUseCases.VoltageControl(
-            FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.forecast_power]),
+    def to_julia(self, cee):
+        return cee.EnergyStorageUseCases.VoltageControl(
+            cee.FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.forecast_power]),
             self.reference_voltage
         )

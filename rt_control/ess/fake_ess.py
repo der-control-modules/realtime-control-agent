@@ -11,6 +11,7 @@ from rt_control.ess import EnergyStorageSystem
 setup_logging()
 _log = logging.getLogger(__name__)
 
+
 class FakeESS(EnergyStorageSystem):
     def __init__(self, controller, config):
         super(FakeESS, self).__init__(controller, config)

@@ -20,11 +20,8 @@ class EnergyArbitrage(UseCase):
     def actual_price(self):
         return self.states.get('actual_price', 0.0)
 
-    def to_julia(self):
-        super(EnergyArbitrage, self).to_julia()
-        from julia.CtrlEvalEngine import FixedIntervalTimeSeries
-        from julia.CtrlEvalEngine import EnergyStorageUseCases
-        return EnergyStorageUseCases.EnergyArbitrage(
-            FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.actual_price]),
-            FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.forecast_price]),
+    def to_julia(self, cee):
+        return cee.EnergyStorageUseCases.EnergyArbitrage(
+            cee.FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.actual_price]),
+            cee.FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.forecast_price]),
         )

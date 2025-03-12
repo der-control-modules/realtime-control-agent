@@ -24,13 +24,10 @@ class Regulation(UseCase):
     def performance_score(self):
         return 0.0  # TODO: How to implement Regulation performance_score?
 
-    def to_julia(self):
-        super(Regulation, self).to_julia()
-        from julia.CtrlEvalEngine import FixedIntervalTimeSeries
-        from julia.CtrlEvalEngine import EnergyStorageUseCases
-        return EnergyStorageUseCases.Regulation(
-            FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.agc_signal]),
-            FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution,
-                                    [EnergyStorageUseCases.RegulationPricePoint(*self.price)]),
+    def to_julia(self, cee):
+        return cee.EnergyStorageUseCases.Regulation(
+            cee.FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.agc_signal]),
+            cee.FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution,
+                                    [cee.EnergyStorageUseCases.RegulationPricePoint(*self.price)]),
             self.performance_score
         )

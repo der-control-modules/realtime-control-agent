@@ -19,11 +19,8 @@ class LoadFollowing(UseCase):
     def realtime_power(self):
         return self.states.get('realtime_power', 0.0)
 
-    def to_julia(self):
-        super(LoadFollowing, self).to_julia()
-        from julia.CtrlEvalEngine import FixedIntervalTimeSeries
-        from julia.CtrlEvalEngine import EnergyStorageUseCases
-        return EnergyStorageUseCases.LoadFollowing(
-            FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.forecast_power]),
-            FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.realtime_power]),
+    def to_julia(self, cee):
+        return cee.EnergyStorageUseCases.LoadFollowing(
+            cee.FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.forecast_power]),
+            cee.FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.realtime_power]),
         )

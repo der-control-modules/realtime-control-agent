@@ -3,11 +3,6 @@ from typing import List, Tuple, Union
 
 from rt_control.modes.es_control_mode import ESControlMode
 
-from julia.api import LibJulia
-api = LibJulia.load(julia='/home/volttron/PyJuliaTesting/julia-1.10.4/bin/julia')
-api.init_julia(['--project=/home/volttron/PyJuliaTesting/ctrl-eval-engine-app'])
-from julia.CtrlEvalEngine.EnergyStorageRTControl import VoltWattMode, MesaModeParams, Vertex, VertexCurve
-
 
 class VoltWatt(ESControlMode):
     # TODO: Implement Mesa Mode Params arguments.
@@ -25,7 +20,7 @@ class VoltWatt(ESControlMode):
 
     def _get_julia_mode_struct(self):
         # The only required parameter is the priority.
-        mesa_mode_params = MesaModeParams(self.priority)
-        return VoltWattMode(mesa_mode_params, self.reference_voltage_offset,
-                            VertexCurve([Vertex(*v) for v in self.volt_watt_curve]),
+        es_rtc = self.CEE.EnergyStorageRTControl
+        return es_rtc.VoltWattMode(es_rtc.MesaModeParams(self.priority), self.reference_voltage_offset,
+                            es_rtc.VertexCurve([es_rtc.Vertex(*v) for v in self.volt_watt_curve]),
                             self.gradient, self.filter_time, self.lower_deadband, self.upper_deadband)

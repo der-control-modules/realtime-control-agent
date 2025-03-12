@@ -13,36 +13,37 @@ except PackageNotFoundError:
 from rt_control.modes import ControlMode
 from rt_control.util import FixedIntervalTimeSeries
 
-from julia.api import LibJulia
-api = LibJulia.load(julia='/home/volttron/PyJuliaTesting/julia-1.10.4/bin/julia')
-api.init_julia(['--project=/home/volttron/PyJuliaTesting/ctrl-eval-engine-app'])
-from julia import CtrlEvalEngine, Dates
-# noinspection PyUnresolvedReferences
-from julia.CtrlEvalEngine import SchedulePeriod, VariableIntervalTimeSeries
-# noinspection PyUnresolvedReferences
-from julia.CtrlEvalEngine.EnergyStorageSimulators import MockSimulator, MockES_Specs, MockES_States
-
 setup_logging()
 _log = logging.getLogger(__name__)
 
 class ESControlMode(ControlMode):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, ctrl_eval_engine_app_path: str, julia_path: str = '/usr/bin/julia', *args, **kwargs):
         super(ESControlMode, self).__init__(*args, **kwargs)
+        from julia.api import LibJulia
+        api = LibJulia.load(julia=julia_path)
+        api.init_julia([f'--project={ctrl_eval_engine_app_path}'])
+        from julia import CtrlEvalEngine
+        self.CEE = CtrlEvalEngine
 
     def control(self, schedule_period, start_time, sp_progress) -> FixedIntervalTimeSeries:
         # TODO: Should this really be the start_time? Should it be created on each control call?
-        sp_progress = VariableIntervalTimeSeries([start_time], []) # TODO: Should this be an instance variable?
-        ess = MockSimulator(MockES_Specs(*self.ess.specs.dump()), MockES_States(*self.ess.states.dump()))
+        sp_progress = self.CEE.VariableIntervalTimeSeries([start_time], []) # TODO: Should this be an instance variable?
+        es_sims = self.CEE.EnergyStorageSimulators
+        ess = es_sims.MockSimulator(es_sims.MockES_Specs(*self.ess.specs.dump()),
+                                    es_sims.MockES_States(*self.ess.states.dump()))
         mode = self._get_julia_mode_struct()
-        schedule_period = SchedulePeriod(*schedule_period.dump())
+        schedule_period = self.CEE.SchedulePeriod(*schedule_period.dump())
         use_cases = [u.to_julia() for u in self.use_cases]
 
         # TODO: Move this to agent with conditional import?
-        controller = CtrlEvalEngine.EnergyStorageRTControl.MesaController([mode], Dates.Minute(5))
+        controller = self.CEE.EnergyStorageRTControl.MesaController([mode], Dates.Minute(5))
         # TODO: Should this be calling the controller or mode control function?
-        output = CtrlEvalEngine.control(ess, controller, schedule_period, use_cases, start_time, sp_progress)
+        output = self.CEE.control(ess, controller, schedule_period, use_cases, start_time, sp_progress)
         return output.value[0]  # TODO: Is there really a use for returning a FixedIntervalTimeSeries as in ESControl?
 
     @abc.abstractmethod
     def _get_julia_mode_struct(self):
         pass
+
+
+cee_app_path = '/home/dmr/Projects/DERControl/ControlAgent/scratch/ctrl-eval-engine-app'
