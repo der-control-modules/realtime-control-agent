@@ -82,7 +82,44 @@ More detailed documentation can be found on
 [ReadTheDocs](https://eclipse-volttron.readthedocs.io/en/latest/external-docs/volttron-interoperability/index.html). The RST source
 of the documentation for this agent is located in the "docs" directory of this repository.
 
-## Agent Configuration
+## Real-time Control Configuration
+
+This configuration defines control logic for a simulated Battery Energy Storage System (ESS) using VOLTTRON.
+
+---
+
+## 🔋 ESS Settings (`ess`)
+
+```json
+{
+  "ess": {
+    "class_name": "FakeESS",
+    "power_capacity_kw": 100,
+    "energy_capacity_kwh": 125,
+    "bess_topic": "devices/PNNL/BESS",
+    "soc_point": "SoC",
+    "power_reading_point": "",
+    "actuator_vip": "",
+    "power_command_point": ""
+  },
+  "modes": [
+    {
+      "name": "ActivePowerResponseName",
+      "class_name": "ActivePowerResponse",
+      "activation_threshold": 10.0,
+      "output_ratio": 1.0,
+      "ramp_params": {}
+    }
+  ],
+  "use_cases": [
+    {
+      "class_name": "PeakLimiting",
+      "realtime_power_topic": "devices/SomeLoad/RealPower"
+    }
+  ],
+  "resolution": 5.0,
+  "start_time": null
+}
 
 
 ## Installation
