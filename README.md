@@ -120,7 +120,7 @@ This configuration defines control logic for a simulated Battery Energy Storage 
   "resolution": 5.0,
   "start_time": null
 }
-
+'''
 
 ## Installation
 
