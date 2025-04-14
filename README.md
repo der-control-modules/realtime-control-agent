@@ -120,7 +120,9 @@ This configuration defines control logic for a simulated Battery Energy Storage 
   "resolution": 5.0,
   "start_time": null
 }
-'''json
+```
+
+
 
 ## Installation
 
@@ -133,6 +135,8 @@ Information on how to install of the VOLTTRON platform can be found
 ```shell
 vctl install realtime-control-agent --vip-identity agent.rt --tag rt --start
 ```
+
+
 
 #### View the status of the installed agent
 
