@@ -43,7 +43,7 @@ class EnergyStorageSystem:
         self.specs = ESSSpecs(config.get('power_capacity_kw', 0.0), config.get('energy_capacity_kwh', 0.0))
         self.states = ESSStates()
 
-        self.bess_topic = config.get('bess_topic')
+        self.bess_topic = config.get('ess_topic', config.get('bess_topic'))
         self.soc_point = config.get('soc_point')
         self.power_reading_point = config.get('power_reading_point')
 
