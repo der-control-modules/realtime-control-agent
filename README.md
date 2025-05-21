@@ -1,94 +1,132 @@
-# Real-time control Agent
+# 🔋 Real-time control Agent
 
-![Eclipse VOLTTRON 10.0.5rc0](https://img.shields.io/badge/Eclipse%20VOLTTRON-10.0.5rc0-red.svg)
-![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)
-![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
-[![pypi version](https://img.shields.io/pypi/v/volttron-interoperability.svg)](https://pypi.org/project/volttron-interoperability/)
+[//]: # (![Eclipse VOLTTRON 11.0.0rc1]&#40;https://img.shields.io/badge/Eclipse%20VOLTTRON-11.0.0rc1-red.svg&#41;)
 
-Main branch tests:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [![Main Branch Passing?](https://github.com/eclipse-volttron/volttron-interoperability/actions/workflows/run-tests.yml/badge.svg?branch=main)](https://github.com/eclipse-volttron/volttron-interoperability/actions/workflows/run-tests.yml)
+[//]: # (![Python 3.10]&#40;https://img.shields.io/badge/python-3.10-blue.svg&#41;)
 
-Develop branch tests:&nbsp;&nbsp; [![Develop Branch Passing?](https://github.com/eclipse-volttron/volttron-interoperability/actions/workflows/run-tests.yml/badge.svg?branch=develop)](https://github.com/eclipse-volttron/volttron-interoperability/actions/workflows/run-tests.yml)
+[//]: # (![Python 3.11]&#40;https://img.shields.io/badge/python-3.11-blue.svg&#41;)
+
+[//]: # ([![pypi version]&#40;https://img.shields.io/pypi/v/volttron-interoperability.svg&#41;]&#40;https://pypi.org/project/volttron-interoperability/&#41;)
+
+[//]: # ()
+[//]: # (Main branch tests:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [![Main Branch Passing?]&#40;https://github.com/eclipse-volttron/volttron-interoperability/actions/workflows/run-tests.yml/badge.svg?branch=main&#41;]&#40;https://github.com/eclipse-volttron/volttron-interoperability/actions/workflows/run-tests.yml&#41;)
+
+[//]: # ()
+[//]: # (Develop branch tests:&nbsp;&nbsp; [![Develop Branch Passing?]&#40;https://github.com/eclipse-volttron/volttron-interoperability/actions/workflows/run-tests.yml/badge.svg?branch=develop&#41;]&#40;https://github.com/eclipse-volttron/volttron-interoperability/actions/workflows/run-tests.yml&#41;)
 
 
-## Requirements
+## 🔋 Requirements
 
 * python >= 3.10
 * volttron >= 10.0 
 
-## Documentation
-# Real-Time Control Agent
+## 🔋 Summary
 
 The Real-Time (RT) Control Agent provides a framework for actuating one or more control algorithms
 on an energy storage system. The RTControl framework involves the use of three abstract class types:
 EnergyStorageSystem, ControlMode, and UseCase.
 
-For each class there are several built-in subclasses, but user defined classes may also be configured and used.		
-    
-### EnergyStorageSystem
+For each class type there are several built-in subclasses, but user defined classes may also be configured and used.
+More detailed documentation can be found on the [DER Control Modules](https://der-control-modules.github.io/) site,
+including descriptions of the various classes which are available to represent storage systems,
+use cases, and control modes.
 
-ESS classes abstract an energy storage system into a standard interface for use by control modes.
-The base class allows configuration of points on which state of charge and power
-can be monitored and (in the case of power) commanded. 
-Currently two built-in ESS classes are shown in [](#storage-systems)
+## 🔋 Configuration
 
-Table: Energy Storage Systems Implemented in the Real-Time Control Agent {#storage-systems}
+The agent is configured using a JSON file which accepts the following parameters:
 
-| Storage System    | Description                                                                                                                                                                                                                                                                                                          |
-|-------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| FakeESS           | Intended only for testing, commands sent to the FakeESS update in memory representations of the state of charge and power.                                                                                                                                                                                           |
-| SebBESS           | This class is designed to communicate with a simple battery system which has a single control point in Watts. Other storage systems with a similar interface may be configured using the same class, or it may be used as a model for writing a custom class to command a system with a different control structure. |
+| Parameter                 | Description                                                                         |
+|---------------------------|-------------------------------------------------------------------------------------|
+| ctrl_eval_engine_app_path | The filesystem path to the app directory of the ctrl_eval_engine repository.        |
+| resolution                | The smallest time interval considered by the control.                               |
+| schedule_topic            | A VOLTTRON topic which will be monitored for publishes from a scheduler agent.      |
+ | ess                       | A configuration dictionary for the storage system. (see below)                      |
+| use_cases                 | A list of configuration dictionaries, one for each use case. (see below)            |
+ | modes                     | A list of configuration dictionaries, one for each control mode in use. (see below) |
 
-### UseCase
+The `ess`, `modes`, and `use_cases` keys are used to configure the options for these respective classes.
+`ess` takes a single dictionary, while `modes` and `use_cases` can each accept a list JSON objects (dictionaries).
+Each dictionary defines a single class of the appropriate type. Every object in these categories can accept at least
+the following two parameters, which tell the agent where to find the class being configured.
+Each configuration may also accept additional arguments determined by the specific class.
 
-UseCases are information services intended to collect data necessary to actualize some goal with the storage system.
-The UseCase ingests data from elsewhere in the VOLTTRON ecosystem, performs any necessary model calculations or
-transformations, and makes it available to control modes through properties. Eight built-in Use Cases are available,
-as shown in [](#use-cases) (It should be noted that some modelled values are provided only as stubs.
-These may be implemented by users who subclass these with their own model.)
+| Parameter              | Description                                                                                                                                                        |
+|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| class_name             | The name of the object class to be instantiated.                                                                                                                   |
+| module_name (optional) | The name of the module in which a custom class can be located. This parameter is optional if the module name is a snake_case version of the camel-cased ClassName. |
 
-Table: Use Cases Implemented in the Real-Time Control Agent {#use-cases}
 
-| Use Case               | Description  | Inputs                                        |
-|------------------------|--|-----------------------------------------------------------|
-| Energy Arbitrage       | Energy arbitrage refers to the operation of energy storage that discharges when the electricity prices are high and charges when the prices are low. Since this type of energy storage operation reduces the net system load during peak hours and increases the load during off-peak hours, it is also often referred to as load leveling or load shifting. Energy arbitrage can be performed in both a vertically integrated system and in wholesale electricity markets. The economic reward is the price or cost differential between charging and discharging electrical energy minus the cost of losses during the full charging/discharging cycle. | &#x2022;&nbsp;actual_price<br/>&#x2022;&nbsp;forecast_price&nbsp;(stub)  |
-| Frequency Response     | The ESS is configured to independently respond to excursions from nominal frequency by altering its power output or input. The parameters by which the control will be actuated are set using vertices or gradients in a Frequency-Watt curve. | &#x2022;&nbsp;metered_frequency                                         |
-| Generation Following   | Generation is fully or partially countered by using the ESS to absorb energy (charging) when metered generation rises beyond a configured threshold. This may be used to prevent export to the grid or as a mechanism for charging the ESS when local generation is high. | &#x2022;&nbsp;forecast_power&nbsp;(stub)<br/> &#x2022;&nbsp;realtime_power                  |
-| Load Following         | Load is fully or partially countered by discharging the ESS when metered load rises above some threshold. | &#x2022; forecast_power (stub)<br>&#x2022;&nbsp;realtime_power                   |
-| Peak Limiting          | Metered load, beyond some configured threshold, is fully countered by discharing the ESS until load drops below this threshold again. This can be used as a mechanism to avoid capacity charges. | &#x2022;&nbsp;realtime_power                                            |
-| Regulation             | The electric power system must maintain a near-real-time balance between generation and load. Balancing generation and load instantaneously and continuously is difficult because loads and generation are constantly fluctuating. Frequency regulation, also known as automatic frequency restoration reserve (aFRR) in continental Europe, are required to continuously balance generation and load under normal operating conditions. Traditionally, the majority of frequency regulation capability has been provided by specially equipped generators. As technologies evolve, new types of flexibility resources emerge, such as ESSs. | &#x2022;&nbsp;agc_signal<br/>&#x2022;&nbsp;price&nbsp;(stub)<br/>&#x2022;&nbsp;performance_score&nbsp;(stub)  |
-| Variability Mitigation | A power smoothing algorithm reduces power fluctuations from renewable energy sources or volatile loads. It manages energy storage systems to store excess power during high generation or low demand, and release stored power during low generation or high demand. It employs real-time monitoring and control systems to adjust power in response to changing conditions. The algorithm enhances stability and reliability of renewable energy integration and optimizes energy storage utilization. Variability (a.k.a. ramp-rate, volatility, or intermittency) is defined as an instantaneous change in a load or source power, e.g., rapid changes in solar output power due to an intermittent cloud cover. | &#x2022;&nbsp;forecast_power&nbsp;(stub)<br/>&#x2022;&nbsp;metered_power |
+#### 🔋 ESS Settings (`ess`)
 
-### Mode
+The ess key takes a single dictionary which defines how the agent interacts with the storage device.
+All ess classes can take the parameters listed in the following table.
+Specific storage devices may require a concrete subclass of the ESS class, and will also accept additional
+parameters, as necessary to configure that device.
 
-Control Modes contain the implementation of an algorithm for actuating the storage system.
-These may, optionally, ingest data from UseCases. They control the storage hardware through
-the interface of EnergyStorageSystem classes. Built-in control modes are described in [](#control-modes)
+| Parameter           | Description                                                                     |
+|---------------------|---------------------------------------------------------------------------------|
+| ess_topic           | A VOLTTRON topic which will be monitored for publishes from the storage device. |
+ | soc_point           | The point name to read state of charge from publishes on the ess_topic.         |
+ | power_reading_point | The point name to read power from publishes on the ess_topic.                   |
+ | power_command_topic | A VOLTTRON topic which will be used to command power set points.                |
+| power_command_point | The point name to write set point commands on the power_command_topic.          |
+ | actuator_vip        | The VOLTTRON vip-identity of the agent being used to actuate the ESS.           |
+ | actuation_method    | The method name used to command the actuator agent over RPC.                    |
+ | actuation_kwargs    | Any keyword arguments to be provided to the actuator agent.                     |
+ | rounding_precision  | The number of decimal places to which to round values when commanding power.    |
 
-Table: Control Modes Implemented in the Real-Time Control Agent {#control-modes}
+#### 🔋 Use Case Settings (`use_cases`)
 
-| Control Mode                    | Description                                                                                                                                                                                                                                                                                                    |
-|---------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Active Power Limit              | Implements the MESA Active Power Limiting Mode, which disallows power commands outside of specified values.  This is used along with other control modes to constrain their output commands.                                                                                                                   |
-| Active Power Response           | Implements the MESA Active Power Response Modes. This mode may be configured to provide Generation Following, Load Following, or Peak Limiting, depending on the Use Case with which it is paired.                                                                                                             |
-| Active Power Smoothing          | Implements the MESA Active Power Smoothing Mode. This actuates the storage using a moving average filter applied to the measured output of a variable resource (e.g., the production meter on a photovoltaic array).                                                                                           |
-| AGC                             | Implements the MESA AGC Mode. This follows an AGC command signal.                                                                                                                                                                                                                                              |
-| Adaptive Moving Average Control | Similar to the Active Power Smoothing mode, but using an algorithm which self-optimizes the window of the moving average filter by using a longer window (more aggressive smoothing) when variability is high and a shorter window (which will utiilize less of the storage resource)when variability is low.  |
-| Charge/Discharge Storage        | Implements the MESA Charge/Discharge Storage Mode. The battery is actuated using an ingested schedule or a pre-configured value.                                                                                                                                                                               |
-| Frequency-Watt                  | Implements the MESA Frequency-Watt Mode. This utilizes a configured curve to adjust power in response to a measured frequency signal, with the goal of supporting the nominal grid frequency.                                                                                                                  | 
-| PID                             | Uses a PID loop to attempt to maintain power targets in response to changes in load or generation.                                                                                                                                                                                                             |
-| Rule Based                      | The rule based control is organized around developing rules to modify the battery set point from the day-ahead planning in real time.          
+Use cases collect information about the state of the system which will be consumed by the control modes to
+make decisions regarding the operation of the storage device. This information is generally obtained from
+other agents via the VOLTTRON message bus. A use case may require multiple data points, though all current
+use case implementations only require one. Each data-point requires two configuration keys in the
+dictionary for that use case: a topic on which to subscribe for data and the point name to identify the data
+in the received messages.  For each data point, the user should specify two configurations:
+`<identifier_name>_topic` and `<identifier_name>_point`(where "<identifier_name>" should be replaced by the
+appropriate names in the table below). For example, the Energy Arbitrage use case uses
+`actual_price_topic` and `actual_price_point`.
 
-More detailed documentation can be found on
-[ReadTheDocs](https://eclipse-volttron.readthedocs.io/en/latest/external-docs/volttron-interoperability/index.html). The RST source
-of the documentation for this agent is located in the "docs" directory of this repository.
+| Use Case               | Identifier Name   | Description                           |
+|------------------------|-------------------|---------------------------------------|
+| Energy Arbitrage       | actual_price      | The current price of energy.          |
+| Frequency Response     | metered_frequency | Frequency at the reference meter.     |
+| Generation Following   | realtime_power    | Power at the reference meter.         |
+ | Load Following         | realtime_power    | Power at the reference meter.         |
+| Peak Limiting          | realtime_power    | Power at the reference meter.         |
+| Regulation             | agc_signal        | The command from the system operator. |
+| Variability Mitigation | metered_power     | Power at the reference meter.         |
 
-## Real-time Control Configuration
+#### 🔋 Mode Settings (`modes`)
 
-This configuration defines control logic for a simulated Battery Energy Storage System (ESS) using VOLTTRON.
+| Control Mode             | Parameter                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+|--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Active Power Limit       | &#x2022;&nbsp;maximum_charge_percentage: float</br>&#x2022;&nbsp;maximum_discharge_percentage: float                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Active Power Response    | &#x2022;&nbsp;activation_threshold: float</br>&#x2022;&nbsp;output_ratio: float</br>&#x2022;&nbsp;ramp_params: dict                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Active Power Smoothing   | &#x2022;&nbsp;smoothing_gradient: float</br>&#x2022;&nbsp;lower_smoothing_limit: float</br>&#x2022;&nbsp;upper_smoothing_limit: float</br>&#x2022;&nbsp;smoothing_filter_time: Union[float, timedelta]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| AGC                      | &#x2022;&nbsp;minimum_usable_soc: float</br>&#x2022;&nbsp;maximum_usable_soc: float                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Charge/Discharge Storage | &#x2022;&nbsp;minimum_reserve_percent: float = 10.0</br>&#x2022;&nbsp;maximum_reserve_percent: float = 90.0</br>&#x2022;&nbsp;active_power_target: Union[float, None] = None                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Frequency-Watt           | &#x2022;&nbsp;use_curves: bool</br>&#x2022;&nbsp;frequency_watt_curve: List[Tuple[float, float]]</br>&#x2022;&nbsp;low_hysteresis_curve: List[Tuple[float, float]]</br>&#x2022;&nbsp;high_hysteresis_curve: List[Tuple[float, float]]</br>&#x2022;&nbsp;start_delay: Union[timedelta, float]</br>&#x2022;&nbsp;stop_delay: Union[timedelta, float]</br>&#x2022;&nbsp;minimum_soc: float</br>&#x2022;&nbsp;maximum_soc: float</br>&#x2022;&nbsp;use_hysteresis: bool</br>&#x2022;&nbsp;use_snapshot_power: bool</br>&#x2022;&nbsp;high_starting_frequency: float</br>&#x2022;&nbsp;low_starting_frequency: float</br>&#x2022;&nbsp;high_stopping_frequency: float</br>&#x2022;&nbsp;low_stopping_frequency: float</br>&#x2022;&nbsp;high_discharge_gradient: float</br>&#x2022;&nbsp;low_discharge_gradient: float</br>&#x2022;&nbsp;high_charge_gradient: float</br>&#x2022;&nbsp;low_charge_gradient: float</br>&#x2022;&nbsp;high_return_gradient: float</br>&#x2022;&nbsp;low_return_gradient: float |
+| PID                      | &#x2022;&nbsp;resolution</br>&#x2022;&nbsp;kp</br>&#x2022;&nbsp;ti</br>&#x2022;&nbsp;td                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Rule Based               | &#x2022;&nbsp;bound: float                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+
+Some modes make use of a ramp_params dictionary to specify how the control will handle transitions between states.
+This can be specified using either time constants or ramp rates. 
+Where specified, this dictionary may contain the following keys:
+
+| Ramping Type  | Parameter                                                                                                                                                                                                             |
+|---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Time Constant | &#x2022;&nbsp;ramp_up_time_constant: float = None</br>&#x2022;&nbsp;ramp_down_time_constant: float = None                                                                                                             |
+| Ramp Rate     | &#x2022;&nbsp;discharge_ramp_up_rate: float = 1000</br>&#x2022;&nbsp;discharge_ramp_down_rate: float = 1000</br>&#x2022;&nbsp;charge_ramp_up_rate: float = 1000</br>&#x2022;&nbsp;charge_ramp_down_rate: float = 1000 |
+
 
 ---
 
-## 🔋 ESS Settings (`ess`)
+
+## 🔋 Example Configuration
+
+This configuration defines control logic to perform active power response, for the purpose of peak limiting 
+on a simulated Battery Energy Storage System (ESS).
 
 ```json
 {
@@ -122,33 +160,17 @@ This configuration defines control logic for a simulated Battery Energy Storage 
 }
 ```
 
-
-
-## Installation
+## 🔋  Installation
 
 Before installing, VOLTTRON should be installed and running.  Its virtual environment should be active.
 Information on how to install of the VOLTTRON platform can be found
 [here](https://github.com/eclipse-volttron/volttron-core).
 
-#### Install and start the IEEE 1547.1 Interoperability Agent:
+#### 🔋 Install and start the RealTime Control Agent:
 
 ```shell
-vctl install realtime-control-agent --vip-identity agent.rt --tag rt --start
+vctl install realtime-control-agent --vip-identity der.rtc --tag rtc --start
 ```
-
-
-
-#### View the status of the installed agent
-
-```shell
-vctl status
-```
-
-## Development
-
-Please see the following for contributing guidelines [contributing](https://github.com/eclipse-volttron/volttron-core/blob/develop/CONTRIBUTING.md).
-
-Please see the following helpful guide about [developing modular VOLTTRON agents](https://github.com/eclipse-volttron/volttron-core/blob/develop/DEVELOPING_ON_MODULAR.md)
 
                                                                                                                                                                 |
 
