@@ -68,7 +68,7 @@ class RTControlAgent(Agent):
             dt = parse_timestamp_string(dt_string)
             set_point = period.get('bess_setpoint')
             duration = timedelta(seconds=period.get('duration_in_seconds', 3600))
-            if not (dt and set_point):
+            if not dt or set_point is not None:
                 _log.warning(f'Unable to ingest published schedule on {topic} from {sender}'
                              f' for forecast_time: {dt}, message: {message}')
             else:
