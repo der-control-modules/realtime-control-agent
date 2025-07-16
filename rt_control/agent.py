@@ -52,6 +52,7 @@ class RTControlAgent(Agent):
         time_string = contents.get('start_time')
         self.schedule_topic = contents.get('schedule_topic')
         self.wip.start_time = parse_timestamp_string(time_string) if time_string else get_aware_utc_now()
+        self.julia_path = contents.get('julia_path')
         self.cee_app_path = contents.get('ctrl_eval_engine_app_path')
         for m in contents.get('modes', self.modes):
             mode = ControlMode.factory(self, self.ess, self.use_cases, m)
