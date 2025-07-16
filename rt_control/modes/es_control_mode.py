@@ -17,10 +17,10 @@ _log = logging.getLogger(__name__)
 class ESControlMode(ControlMode):
     def __init__(self, ctrl_eval_engine_app_path: str, julia_path: str = '/usr/bin/julia', *args, **kwargs):
         super(ESControlMode, self).__init__(*args, **kwargs)
-        from julia import Dates
         from julia.api import LibJulia
         api = LibJulia.load(julia=julia_path)
         api.init_julia([f'--project={ctrl_eval_engine_app_path}'])
+        from julia import Dates
         from julia import CtrlEvalEngine
         self.CEE = CtrlEvalEngine
 
