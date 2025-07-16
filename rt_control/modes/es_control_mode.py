@@ -1,4 +1,5 @@
 import abc
+import julia
 import logging
 
 from importlib.metadata import distribution, PackageNotFoundError
@@ -21,6 +22,7 @@ class ESControlMode(ControlMode):
         api = LibJulia.load(julia=julia_path)
         api.init_julia([f'--project={ctrl_eval_engine_app_path}'])
         from julia import Dates
+        self.julia_dates = Dates
         from julia import CtrlEvalEngine
         self.CEE = CtrlEvalEngine
 
@@ -35,7 +37,7 @@ class ESControlMode(ControlMode):
         use_cases = [u.to_julia() for u in self.use_cases]
 
         # TODO: Move this to agent with conditional import?
-        controller = self.CEE.EnergyStorageRTControl.MesaController([mode], Dates.Minute(5))
+        controller = self.CEE.EnergyStorageRTControl.MesaController([mode], self.julia_dates.Minute(5))
         # TODO: Should this be calling the controller or mode control function?
         output = self.CEE.control(ess, controller, schedule_period, use_cases, start_time, sp_progress)
         return output.value[0]  # TODO: Is there really a use for returning a FixedIntervalTimeSeries as in ESControl?
