@@ -43,6 +43,8 @@ class RTControlAgent(Agent):
         self.cee_app_path: str = None
         self.julia_path: str = None
 
+        self._stop = False
+
         self.vip.config.subscribe(self.configure_main, ['NEW', 'UPDATE'], 'config')
 
     def configure_main(self, _, __, contents):
@@ -135,6 +137,8 @@ class RTControlAgent(Agent):
         return FixedIntervalTimeSeries(start_time, self.resolution, [energy_limited_power])
 
     def loop(self):
+        if self._stop:
+            return
         now = get_aware_utc_now()
         current_schedule_period = next(
             filter(lambda s: s.t_start < now < s.end_time, self.schedule), SchedulePeriod(0.0, now)
@@ -151,7 +155,8 @@ class RTControlAgent(Agent):
     @Core.receiver('onstop')
     def on_stop(self, _):
         _log.debug('In on_stop method.')
-        self.ess.stop()
+        self._stop = True
+        super(RTControlAgent, self).on_stop(None)
 
 def main():
     """Main method called by the app."""

@@ -34,7 +34,9 @@ class ESControlMode(ControlMode):
                                     es_sims.MockES_States(*self.ess.states.dump()))
         mode = self._get_julia_mode_struct()
         schedule_period = self.CEE.SchedulePeriod(*schedule_period.dump())
-        use_cases = [u.to_julia() for u in self.use_cases]
+        use_cases = [u.to_julia() for u in self.use_cases] # TODO: If this is empty, pyjulia will make it a simple list.
+                                                           #  Probably need to make a ScheduleFollowing UseCase
+                                                           #  or a control function without the use_cases parameter.
 
         # TODO: Move this to agent with conditional import?
         controller = self.CEE.EnergyStorageRTControl.MesaController([mode], self.julia_dates.Minute(5))

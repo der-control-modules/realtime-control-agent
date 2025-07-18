@@ -133,6 +133,6 @@ class EnergyStorageSystem:
             module = config.pop('module_name', 'rt_control.ess.' + camel_to_snake(class_name))
         _log.info(f'Configuring class: {class_name} from module: {module}')
         module = import_module(module)
-        mode_class = getattr(module, class_name)
-        mode = mode_class(controller=controller, config=config)
-        return mode
+        ess_class = getattr(module, class_name)
+        ess = ess_class(controller=controller, config=config)
+        return ess
