@@ -17,12 +17,19 @@ _log = logging.getLogger(__name__)
 
 
 class ESSSpecs:
-    def __init__(self, power_capacity_kw: float = 0.0, energy_capacity_kwh: float = 0.0, efficiency=1.0):
+    def __init__(self, power_capacity_kw: float = 0.0, energy_capacity_kwh: float = 0.0, efficiency=1.0,
+                 reactive_power_capacity_kvar: float = 0.0):
         self.power_capacity_kw: float = float(power_capacity_kw)
         self.energy_capacity_kwh: float = float(energy_capacity_kwh)
         self.efficiency = float(efficiency)
+        # Reactive-power (kVAR) rating. 0.0 => fall back to the active-power rating as
+        # an apparent-power proxy (see EnergyStorageSystem.maximum_reactive_power).
+        self.reactive_power_capacity_kvar: float = float(reactive_power_capacity_kvar)
 
     def dump(self):
+        # NOTE: This tuple feeds the Julia MockES_Specs, which only knows the first
+        # three fields, so reactive_power_capacity_kvar is intentionally NOT included
+        # here. Use reactive_power_capacity_kvar directly for native reactive modes.
         return self.power_capacity_kw, self.energy_capacity_kwh, self.efficiency
 
 class ESSStates:
@@ -31,6 +38,8 @@ class ESSStates:
         self.d: float = 0.0
         self.power: float = 0.0
         self.power_command: float = 0.0
+        self.reactive_power: float = 0.0
+        self.reactive_power_command: float = 0.0
 
     def dump(self):
         return self.soc,  # Note: The comma is necessary to return a tuple.
@@ -39,7 +48,8 @@ class ESSStates:
 class EnergyStorageSystem:
     def __init__(self, controller, config):
         self.controller = controller
-        self.specs = ESSSpecs(config.get('power_capacity_kw', 0.0), config.get('energy_capacity_kwh', 0.0))
+        self.specs = ESSSpecs(config.get('power_capacity_kw', 0.0), config.get('energy_capacity_kwh', 0.0),
+                              reactive_power_capacity_kvar=config.get('reactive_power_capacity_kvar', 0.0))
         self.states = ESSStates()
 
         self.bess_topic = config.get('bess_topic')
@@ -48,6 +58,9 @@ class EnergyStorageSystem:
 
         self.power_command_point = config.get('power_command_point')
         self.power_command_topic = config.get('power_command_topic', self.bess_topic)
+
+        self.reactive_power_command_point = config.get('reactive_power_command_point')
+        self.reactive_power_command_topic = config.get('reactive_power_command_topic', self.bess_topic)
 
         self.actuator_vip = config.get('actuator_vip')
         self.actuation_method = config.get('actuation_method')
@@ -89,6 +102,19 @@ class EnergyStorageSystem:
         return self.specs.power_capacity_kw if self.specs.power_capacity_kw else 0.0
 
     @property
+    def maximum_reactive_power(self) -> float:
+        # Fall back to the active-power rating as an apparent-power proxy when no
+        # explicit kVAR rating is configured.
+        if self.specs.reactive_power_capacity_kvar:
+            return self.specs.reactive_power_capacity_kvar
+        return self.specs.power_capacity_kw if self.specs.power_capacity_kw else 0.0
+
+    @property
+    def minimum_reactive_power(self) -> float:
+        # Symmetric inductive/capacitive range about zero.
+        return -self.maximum_reactive_power
+
+    @property
     def energy_state(self) -> float:
         # if any(x is None for x in [self.soc, self.specs.energy_capacity_kwh]):
         #     return None
@@ -116,12 +142,31 @@ class EnergyStorageSystem:
                                          self.power_command_point, value).get(timeout=5)
         except (Exception, Timeout) as e:
             _log.warning(f'Failed to set point on ESS using actuator: {self.actuator_vip},'
-                         f' method: {self.actuation_method}, power_command_topic: {power_command_topic},'
+                         f' method: {self.actuation_method}, power_command_topic: {self.power_command_topic},'
                          f' power_command_point: {self.power_command_point}. Got error: {e}')
+
+    @property
+    def reactive_power_command(self) -> float:
+        return self.states.reactive_power_command / 1000 if self.states.reactive_power_command else 0.0
+
+    @reactive_power_command.setter
+    def reactive_power_command(self, value: float):
+        value = round(value, self.rounding_precision)
+        if not self.reactive_power_command_point:
+            _log.debug(f'No reactive_power_command_point configured; skipping reactive actuation of {value} kVAR.')
+            return
+        try:
+            self.controller.vip.rpc.call(self.actuator_vip, self.actuation_method, self.reactive_power_command_topic,
+                                         self.reactive_power_command_point, value).get(timeout=5)
+        except (Exception, Timeout) as e:
+            _log.warning(f'Failed to set reactive point on ESS using actuator: {self.actuator_vip},'
+                         f' method: {self.actuation_method}, topic: {self.reactive_power_command_topic},'
+                         f' point: {self.reactive_power_command_point}. Got error: {e}')
 
     def stop(self):
         _log.debug('Stopping ESS.')
         self.power_command = 0.0
+        self.reactive_power_command = 0.0
 
     @classmethod
     def factory(cls, controller, config):

@@ -1,0 +1,178 @@
+{
+  "ess": {
+    "class_name": "FakeESS",
+    "power_capacity_kw": 100,
+    "energy_capacity_kwh": 125,
+    "reactive_power_capacity_kvar": 60,
+    "bess_topic": "devices/PNNL/BESS",
+    "soc_point": "SoC",
+    "power_reading_point": "",
+    "actuator_vip": "",
+    "power_command_point": "",
+    "reactive_power_command_point": ""
+  },
+  "modes": [
+    {
+      "name": "ChargeDischargeStorageExample",
+      "class_name": "ChargeDischargeStorage",
+      "priority": 0,
+      "minimum_reserve_percent": 10.0,
+      "maximum_reserve_percent": 90.0,
+      "active_power_target": null,
+      "ramp_or_time_constant": true,
+      "ramp_params": {}
+    },
+    {
+      "name": "ActivePowerLimitExample",
+      "class_name": "ActivePowerLimit",
+      "priority": 1,
+      "maximum_charge_percentage": 100.0,
+      "maximum_discharge_percentage": 80.0
+    },
+    {
+      "name": "AGCExample",
+      "class_name": "AGC",
+      "priority": 2,
+      "minimum_usable_soc": 10.0,
+      "maximum_usable_soc": 90.0,
+      "ramp_or_time_constant": true,
+      "ramp_params": {}
+    },
+    {
+      "name": "ActivePowerSmoothingExample",
+      "class_name": "ActivePowerSmoothing",
+      "priority": 3,
+      "smoothing_gradient": 2.0,
+      "lower_smoothing_limit": -50.0,
+      "upper_smoothing_limit": 50.0,
+      "smoothing_filter_time": 5.0,
+      "ramp_params": {}
+    },
+    {
+      "name": "VoltWattExample",
+      "class_name": "VoltWatt",
+      "priority": 4,
+      "reference_voltage_offset": 0.0,
+      "volt_watt_curve": [[245.0, 0.0], [255.0, -100.0]],
+      "gradient": 1.0,
+      "filter_time": 5.0,
+      "lower_deadband": 2.0,
+      "upper_deadband": 2.0,
+      "ramp_params": {}
+    },
+    {
+      "name": "FrequencyWattExample",
+      "class_name": "FrequencyWatt",
+      "priority": 5,
+      "use_curves": true,
+      "frequency_watt_curve": [[60.0, 0.0], [61.0, 100.0]],
+      "low_hysteresis_curve": [[59.0, 0.0]],
+      "high_hysteresis_curve": [[61.0, 0.0]],
+      "start_delay": 0.0,
+      "stop_delay": 0.0,
+      "minimum_soc": 10.0,
+      "maximum_soc": 90.0,
+      "use_hysteresis": true,
+      "use_snapshot_power": false,
+      "high_starting_frequency": 60.3,
+      "low_starting_frequency": 59.7,
+      "high_stopping_frequency": 60.1,
+      "low_stopping_frequency": 59.9,
+      "high_discharge_gradient": 1.0,
+      "low_discharge_gradient": 1.0,
+      "high_charge_gradient": 1.0,
+      "low_charge_gradient": 1.0,
+      "high_return_gradient": 1.0,
+      "low_return_gradient": 1.0,
+      "ramp_params": {}
+    },
+    {
+      "name": "ConstantVarExample",
+      "class_name": "ConstantVar",
+      "priority": 6,
+      "reactive_power_target": 50.0
+    },
+    {
+      "name": "FixedPowerFactorExample",
+      "class_name": "FixedPowerFactor",
+      "priority": 7,
+      "power_factor_generating": 0.95,
+      "power_factor_charging": -0.95
+    },
+    {
+      "name": "VoltVarExample",
+      "class_name": "VoltVar",
+      "priority": 8,
+      "reference_voltage_offset": 0.0,
+      "volt_var_curve": [[240.0, 100.0], [245.0, 0.0], [250.0, -100.0]]
+    },
+    {
+      "name": "WattVarExample",
+      "class_name": "WattVar",
+      "priority": 9,
+      "watt_var_curve": [[0.0, 0.0], [100.0, -50.0]]
+    },
+    {
+      "name": "DynamicReactiveCurrentSupportExample",
+      "class_name": "DynamicReactiveCurrentSupport",
+      "priority": 10,
+      "deadband_min_voltage": -2.0,
+      "deadband_max_voltage": 2.0,
+      "gradient_sag": 5.0,
+      "gradient_swell": 5.0,
+      "block_zone_voltage": 20.0
+    },
+    {
+      "name": "PowerFactorCorrectionExample",
+      "class_name": "PowerFactorCorrection",
+      "priority": 11,
+      "average_pf_target": 0.98,
+      "lower_pf_limit": 0.9,
+      "upper_pf_limit": 1.0
+    },
+    {
+      "name": "VoltageRideThroughExample",
+      "class_name": "VoltageRideThrough",
+      "priority": 100,
+      "high_must_trip": 264.0,
+      "low_must_trip": 211.0,
+      "high_momentary_cessation": 252.0,
+      "low_momentary_cessation": 222.0
+    },
+    {
+      "name": "FrequencyRideThroughExample",
+      "class_name": "FrequencyRideThrough",
+      "priority": 101,
+      "high_must_trip": 61.5,
+      "low_must_trip": 58.5,
+      "high_momentary_cessation": 60.5,
+      "low_momentary_cessation": 59.5
+    }
+  ],
+  "use_cases": [
+    {
+      "class_name": "VoltageControl",
+      "metered_voltage_topic": "devices/PNNL/Meter",
+      "metered_voltage_point": "Voltage",
+      "reference_voltage": 240.0
+    },
+    {
+      "class_name": "FrequencyResponse",
+      "metered_frequency_topic": "devices/PNNL/Meter",
+      "metered_frequency_point": "Frequency",
+      "nominal_frequency": 60.0
+    },
+    {
+      "class_name": "Regulation",
+      "agc_signal_topic": "devices/PNNL/AGC",
+      "agc_signal_point": "Signal"
+    },
+    {
+      "class_name": "PeakLimiting",
+      "realtime_power_topic": "devices/SomeLoad/RealPower",
+      "realtime_power_point": "Power"
+    }
+  ],
+  "resolution": 5.0,
+  "start_time": null
+}

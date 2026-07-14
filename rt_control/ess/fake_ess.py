@@ -22,3 +22,10 @@ class FakeESS(EnergyStorageSystem):
         # Store the power command as the power and power_command (adjusting for unit).
         self.states.power = value * 1000
         self.states.power_command = value * 1000
+
+    @EnergyStorageSystem.reactive_power_command.setter
+    def reactive_power_command(self, value: float):
+        _log.debug(f'Actuating reactive command of: {value}')
+        # Store the reactive-power command locally (adjusting for unit) instead of RPCing.
+        self.states.reactive_power = value * 1000
+        self.states.reactive_power_command = value * 1000

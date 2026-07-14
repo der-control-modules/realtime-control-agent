@@ -15,7 +15,7 @@ else:
     from volttron.platform.vip.agent import Agent, Core, RPC
 
 from rt_control.ess import EnergyStorageSystem
-from rt_control.modes import ControlMode
+from rt_control.modes import ControlMode, EmergencyMesaMode, ReactiveMesaMode
 from rt_control.use_cases import UseCase
 from rt_control.util import FixedIntervalTimeSeries, SchedulePeriod, VariableIntervalTimeSeries
 
@@ -37,6 +37,8 @@ class RTControlAgent(Agent):
         self.schedule_topic = None
         self.use_cases = []
         self.wip: FixedIntervalTimeSeries = FixedIntervalTimeSeries(get_aware_utc_now(), 0.0)
+        self._last_reactive_command: float = 0.0
+        self._has_reactive_modes: bool = False
 
         self.vip.config.subscribe(self.configure_main, ['NEW', 'UPDATE'], 'config')
 
@@ -111,20 +113,41 @@ class RTControlAgent(Agent):
             return power
 
     def control(self, schedule_period: SchedulePeriod, start_time: datetime, sp_progress: VariableIntervalTimeSeries):
-        # Initialize global power value for new iteration:
+        # Initialize global active/reactive power values for new iteration:
         current_iteration_power = 0.0
+        current_iteration_reactive_power = 0.0
+        emergency_modes = []
+        has_reactive_modes = False
         # Call each mode in order of priority:
         for mode in self.modes:
+            # Emergency ride-through modes gate the summed output after all other
+            # modes have run; collect them and skip the additive path here.
+            if isinstance(mode, EmergencyMesaMode):
+                emergency_modes.append(mode)
+                continue
             # Initialize mode power value for new iteration.
             mode.wip.append(0.0)
 
             mode_power = mode.control(schedule_period, start_time, sp_progress)
             mode.wip[-1] = mode_power
             current_iteration_power += mode_power
-        # Apply limits to the output before controlling:
+            # Reactive modes contribute reactive power (kVAR) on a separate axis.
+            if isinstance(mode, ReactiveMesaMode):
+                has_reactive_modes = True
+                current_iteration_reactive_power += mode.control_reactive(schedule_period, start_time, sp_progress)
+        # Apply limits to the active output before controlling:
         ess_limited_power = min(max(current_iteration_power, self.ess.minimum_power), self.ess.maximum_power)
         energy_limited_power = self.apply_energy_limits(ess_limited_power, self.resolution)
+        # Clamp reactive power to the ESS reactive range.
+        reactive_power = min(max(current_iteration_reactive_power, self.ess.minimum_reactive_power),
+                             self.ess.maximum_reactive_power)
+        # Apply emergency ride-through gating as a final-stage override (in priority order).
+        for mode in emergency_modes:
+            energy_limited_power, reactive_power = mode.gate(energy_limited_power, reactive_power, start_time)
         self.wip.append(energy_limited_power)
+        self._last_reactive_command = reactive_power
+        # Actuate the reactive axis whenever a reactive or emergency mode is present.
+        self._has_reactive_modes = has_reactive_modes or bool(emergency_modes)
         return FixedIntervalTimeSeries(start_time, self.resolution, [energy_limited_power])
 
     def loop(self):
@@ -140,6 +163,10 @@ class RTControlAgent(Agent):
         else:
             _log.debug(f'Skipping actuation, command: {command[0]} already matches ess.power_command:'
                        f' {self.ess.power_command}.')
+        # Actuate the reactive-power axis when reactive/emergency modes are configured.
+        if self._has_reactive_modes and self.ess.reactive_power_command != self._last_reactive_command:
+            _log.debug(f'Setting reactive command: {self._last_reactive_command} kVAR.')
+            self.ess.reactive_power_command = self._last_reactive_command
 
     @Core.receiver('onstop')
     def on_stop(self, _):

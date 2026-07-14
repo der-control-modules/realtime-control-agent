@@ -1,4 +1,4 @@
-from rt_control.modes.es_control_mode import ESControlMode
+from rt_control.modes.novel.es_control_mode import ESControlMode
 
 from julia.api import LibJulia
 api = LibJulia.load(julia='/home/volttron/PyJuliaTesting/julia-1.10.4/bin/julia')

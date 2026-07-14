@@ -51,3 +51,6 @@ class UseCase:
 from rt_control.use_cases.generation_following import GenerationFollowing
 from rt_control.use_cases.load_following import LoadFollowing
 from rt_control.use_cases.peak_limiting import PeakLimiting
+from rt_control.use_cases.regulation import Regulation
+from rt_control.use_cases.voltage_control import VoltageControl
+from rt_control.use_cases.frequency_response import FrequencyResponse
