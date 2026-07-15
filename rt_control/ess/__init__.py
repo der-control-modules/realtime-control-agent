@@ -2,12 +2,13 @@ import logging
 
 from gevent import Timeout
 from importlib import import_module
-from importlib.metadata import version
 from typing import Callable
 
-if int(version('volttron').split('.')[0]) >= 10:
-    from volttron.utils import setup_logging
-else:
+from importlib.metadata import distribution, PackageNotFoundError
+try:
+    distribution('volttron-core')
+    from volttron.client.logs import setup_logging
+except PackageNotFoundError:
     from volttron.platform.agent.utils import setup_logging
 
 from rt_control.util import camel_to_snake
@@ -52,7 +53,7 @@ class EnergyStorageSystem:
                               reactive_power_capacity_kvar=config.get('reactive_power_capacity_kvar', 0.0))
         self.states = ESSStates()
 
-        self.bess_topic = config.get('bess_topic')
+        self.bess_topic = config.get('ess_topic', config.get('bess_topic'))
         self.soc_point = config.get('soc_point')
         self.power_reading_point = config.get('power_reading_point')
 
@@ -177,6 +178,6 @@ class EnergyStorageSystem:
             module = config.pop('module_name', 'rt_control.ess.' + camel_to_snake(class_name))
         _log.info(f'Configuring class: {class_name} from module: {module}')
         module = import_module(module)
-        mode_class = getattr(module, class_name)
-        mode = mode_class(controller=controller, config=config)
-        return mode
+        ess_class = getattr(module, class_name)
+        ess = ess_class(controller=controller, config=config)
+        return ess

@@ -15,13 +15,10 @@ class PeakLimiting(UseCase):
     def realtime_power(self):
         return self.states.get('realtime_power', 0.0)
 
-    def to_julia(self):
-        super(PeakLimiting, self).to_julia()
-        from julia.CtrlEvalEngine import FixedIntervalTimeSeries
-        from julia.CtrlEvalEngine import EnergyStorageUseCases
+    def to_julia(self, cee):
         # TODO: This passes 0 as the peakThreshold. That doesn't appear to be used in Julia
         #  (control algorithms have it as a parameter instead), but why is it there at all?
-        return EnergyStorageUseCases.PeakLimiting(
+        return cee.EnergyStorageUseCases.PeakLimiting(
             0.0,
-            FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.realtime_power]),
+            cee.FixedIntervalTimeSeries(datetime.now(timezone.utc), self.controller.resolution, [self.realtime_power]),
         )

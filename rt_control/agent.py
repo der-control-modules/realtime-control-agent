@@ -2,13 +2,15 @@ import logging
 import sys
 
 from datetime import datetime, timedelta
-from importlib.metadata import version
 
-if int(version('volttron').split('.')[0]) >= 10:
+from importlib.metadata import distribution, PackageNotFoundError
+try:
+    distribution('volttron-core')
+    from volttron.client.logs import setup_logging
     from volttron.client.vip.agent import Agent, Core, RPC
-    from volttron.utils import get_aware_utc_now, load_config, parse_timestamp_string, setup_logging, vip_main
+    from volttron.utils import get_aware_utc_now, load_config, parse_timestamp_string, vip_main
     from volttron.utils.scheduling import periodic
-else:
+except PackageNotFoundError:
     from volttron.platform.agent.utils import (get_aware_utc_now, load_config, parse_timestamp_string, setup_logging,\
         vip_main)
     from volttron.platform.scheduling import periodic
@@ -22,7 +24,7 @@ from rt_control.util import FixedIntervalTimeSeries, SchedulePeriod, VariableInt
 setup_logging()
 _log = logging.getLogger(__name__)
 
-__version__ = 0.1
+__version__ = '0.2'
 
 class RTControlAgent(Agent):
     def __init__(self, config_path, *args, **kwargs):
@@ -40,6 +42,11 @@ class RTControlAgent(Agent):
         self._last_reactive_command: float = 0.0
         self._has_reactive_modes: bool = False
 
+        self.cee_app_path: str = None
+        self.julia_path: str = None
+
+        self._stop = False
+
         self.vip.config.subscribe(self.configure_main, ['NEW', 'UPDATE'], 'config')
 
     def configure_main(self, _, __, contents):
@@ -49,7 +56,8 @@ class RTControlAgent(Agent):
         time_string = contents.get('start_time')
         self.schedule_topic = contents.get('schedule_topic')
         self.wip.start_time = parse_timestamp_string(time_string) if time_string else get_aware_utc_now()
-
+        self.julia_path = contents.get('julia_path')
+        self.cee_app_path = contents.get('ctrl_eval_engine_app_path')
         for m in contents.get('modes', self.modes):
             mode = ControlMode.factory(self, self.ess, self.use_cases, m)
             _log.debug(f'Modes is: {mode}')
@@ -63,9 +71,9 @@ class RTControlAgent(Agent):
     def ingest_schedule(self, _, sender, __,  topic, headers, message):
         for dt_string, period in message.items():
             dt = parse_timestamp_string(dt_string)
-            set_point = message.get('bess_setpoints')
-            duration = timedelta(seconds=message.get('duration_in_seconds', 3600))
-            if not (dt and set_point):
+            set_point = period.get('bess_setpoint')
+            duration = timedelta(seconds=period.get('duration_in_seconds', 3600))
+            if not dt or set_point is not None:
                 _log.warning(f'Unable to ingest published schedule on {topic} from {sender}'
                              f' for forecast_time: {dt}, message: {message}')
             else:
@@ -73,6 +81,7 @@ class RTControlAgent(Agent):
             for i, s in enumerate(self.schedule):
                 if s.t_start < get_aware_utc_now():
                     del self.schedule[i]
+        _log.info(f'Scheduling information received from subscription. Schedule is now: {self.schedule}')
 
     @RPC.export
     def add_mode(self, mode: dict, persistent: bool = False):
@@ -151,6 +160,8 @@ class RTControlAgent(Agent):
         return FixedIntervalTimeSeries(start_time, self.resolution, [energy_limited_power])
 
     def loop(self):
+        if self._stop:
+            return
         now = get_aware_utc_now()
         current_schedule_period = next(
             filter(lambda s: s.t_start < now < s.end_time, self.schedule), SchedulePeriod(0.0, now)
@@ -171,7 +182,8 @@ class RTControlAgent(Agent):
     @Core.receiver('onstop')
     def on_stop(self, _):
         _log.debug('In on_stop method.')
-        self.ess.stop()
+        self._stop = True
+        super(RTControlAgent, self).on_stop(None)
 
 def main():
     """Main method called by the app."""

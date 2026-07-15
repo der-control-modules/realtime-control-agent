@@ -4,10 +4,11 @@ import logging
 from typing import Callable
 from importlib import import_module
 
-from importlib.metadata import version
-if int(version('volttron').split('.')[0]) >= 10:
-    from volttron.utils import setup_logging
-else:
+from importlib.metadata import distribution, PackageNotFoundError
+try:
+    distribution('volttron-core')
+    from volttron.client.logs import setup_logging
+except PackageNotFoundError:
     from volttron.platform.agent.utils import setup_logging
 
 from rt_control.util import camel_to_snake
@@ -43,10 +44,9 @@ class UseCase:
         return mode
 
     @abc.abstractmethod
-    def to_julia(self):
-        from julia.api import LibJulia
-        api = LibJulia.load(julia='/home/volttron/PyJuliaTesting/julia-1.10.4/bin/julia')
-        api.init_julia(['--project=/home/volttron/PyJuliaTesting/ctrl-eval-engine-app'])
+    def to_julia(self, cee):
+        # cee should contain the CtrlEvalEngine module.
+        pass
 
 from rt_control.use_cases.generation_following import GenerationFollowing
 from rt_control.use_cases.load_following import LoadFollowing

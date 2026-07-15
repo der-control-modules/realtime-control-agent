@@ -39,10 +39,20 @@ if 'gevent' not in sys.modules:
     gevent.Timeout = type('Timeout', (Exception,), {})
     sys.modules['gevent'] = gevent
 
-# importlib.metadata.version('volttron') is called at module load throughout rt_control.
+# rt_control modules guard their imports on either importlib.metadata.version('volttron')
+# or distribution('volttron-core'); make both resolve so the modern volttron path is taken.
 import importlib.metadata as _md  # noqa: E402
 _orig_version = _md.version
 _md.version = lambda name: '10.0.0' if name == 'volttron' else _orig_version(name)
+_orig_distribution = _md.distribution
+_md.distribution = lambda name: (types.SimpleNamespace(version='10.0.0')
+                                 if name in ('volttron', 'volttron-core') else _orig_distribution(name))
+
+# volttron.client.logs.setup_logging is imported by the modern-path guards.
+if 'volttron.client.logs' not in sys.modules:
+    client_logs = types.ModuleType('volttron.client.logs')
+    client_logs.setup_logging = lambda *a, **k: None
+    sys.modules['volttron.client.logs'] = client_logs
 
 
 class FakeESS:

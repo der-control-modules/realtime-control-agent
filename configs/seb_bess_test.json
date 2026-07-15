@@ -17,7 +17,7 @@
     {
       "name": "ActivePowerResponseName",
       "class_name": "ActivePowerResponse",
-      "activation_threshold": 120.0,
+      "activation_threshold": 100000.0,
       "output_ratio": 1.0,
       "ramp_params": {},
       "priority": 2
@@ -28,9 +28,10 @@
       "class_name": "PeakLimiting",
       "realtime_power_topic": "devices/PNNL/SEB/ELECTRIC_METER/all",
       "realtime_power_point": "WholeBuildingPower",
-      "subscribe_all_platforms": true
+      "subscribe_all_platforms": false
     }
   ],
   "resolution": 5.0,
-  "start_time": null
+  "start_time": null,
+  "schedule_topic": "record/PNNL/SEB/ESS/schedule"
 }

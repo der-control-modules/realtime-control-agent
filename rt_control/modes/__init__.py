@@ -5,10 +5,12 @@ from datetime import datetime, timedelta
 from importlib import import_module
 from typing import Iterable
 
-from importlib.metadata import version
-if int(version('volttron').split('.')[0]) >= 10:
-    from volttron.utils import setup_logging, get_aware_utc_now
-else:
+from importlib.metadata import distribution, PackageNotFoundError
+try:
+    distribution('volttron-core')
+    from volttron.client.logs import setup_logging
+    from volttron.utils import get_aware_utc_now
+except PackageNotFoundError:
     from volttron.platform.agent.utils import setup_logging, get_aware_utc_now
 
 from rt_control.ess import EnergyStorageSystem
@@ -67,6 +69,11 @@ class ControlMode:
                     f'Could not locate mode class {class_name!r} in any of: {candidates}')
         _log.info(f'Configuring class: {class_name} from module: {module.__name__}')
         mode_class = getattr(module, class_name)
+        if 'ESControlMode' in str(mode_class.__mro__):
+            if controller.cee_app_path:
+                config['ctrl_eval_engine_app_path'] = controller.cee_app_path
+            if controller.julia_path:
+                config['julia_path'] = controller.julia_path
         mode = mode_class(controller=controller, ess=ess, use_cases=use_cases, **config)
         mode.config = config
         return mode

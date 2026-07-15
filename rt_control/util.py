@@ -1,12 +1,13 @@
 import re
 
 from datetime import datetime, timedelta
-from importlib.metadata import version
 from typing import List, Union
 
-if int(version('volttron').split('.')[0]) >= 10:
+from importlib.metadata import distribution, PackageNotFoundError
+try:
+    distribution('volttron-core')
     from volttron.utils import parse_timestamp_string
-else:
+except PackageNotFoundError:
     from volttron.platform.agent.utils import parse_timestamp_string
 
 first_cap_re = re.compile('(.)([A-Z][a-z]+)')
