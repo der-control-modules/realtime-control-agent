@@ -39,7 +39,6 @@ The agent is configured using a JSON file which accepts the following parameters
 |---------------------------|-------------------------------------------------------------------------------------|
 | ctrl_eval_engine_app_path | The filesystem path to the app directory of the ctrl_eval_engine repository.        |
 | resolution                | The smallest time interval considered by the control.                               |
-| schedule_topic            | A VOLTTRON topic which will be monitored for publishes from a scheduler agent.      |
  | ess                       | A configuration dictionary for the storage system. (see below)                      |
 | use_cases                 | A list of configuration dictionaries, one for each use case. (see below)            |
  | modes                     | A list of configuration dictionaries, one for each control mode in use. (see below) |
@@ -118,6 +117,30 @@ Where specified, this dictionary may contain the following keys:
 |---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Time Constant | &#x2022;&nbsp;ramp_up_time_constant: float = None</br>&#x2022;&nbsp;ramp_down_time_constant: float = None                                                                                                             |
 | Ramp Rate     | &#x2022;&nbsp;discharge_ramp_up_rate: float = 1000</br>&#x2022;&nbsp;discharge_ramp_down_rate: float = 1000</br>&#x2022;&nbsp;charge_ramp_up_rate: float = 1000</br>&#x2022;&nbsp;charge_ramp_down_rate: float = 1000 |
+
+The modes above command **active power** (kW). The agent also supports **reactive power** (kVAR)
+modes and **emergency ride-through** modes. Reactive modes contribute a reactive-power command on a
+separate axis, which is clamped to the ESS reactive range and actuated when any reactive or emergency
+mode is configured. Emergency ride-through modes run last and gate (override) the summed active and
+reactive output in priority order.
+
+##### 🔋 Reactive Power Modes
+
+| Control Mode                    | Parameter                                                                                                                                                                         |
+|---------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Constant VAR                    | &#x2022;&nbsp;reactive_power_target: float                                                                                                                                       |
+| Fixed Power Factor              | &#x2022;&nbsp;power_factor_generating: float</br>&#x2022;&nbsp;power_factor_charging: float = None                                                                               |
+| Volt-VAR                        | &#x2022;&nbsp;volt_var_curve: List[Tuple[float, float]]</br>&#x2022;&nbsp;reference_voltage_offset: float = 0.0                                                                  |
+| Watt-VAR                        | &#x2022;&nbsp;watt_var_curve: List[Tuple[float, float]]                                                                                                                          |
+| Power Factor Correction         | &#x2022;&nbsp;average_pf_target: float</br>&#x2022;&nbsp;lower_pf_limit: float = None</br>&#x2022;&nbsp;upper_pf_limit: float = None                                             |
+| Dynamic Reactive Current Support | &#x2022;&nbsp;deadband_min_voltage: float = 0.0</br>&#x2022;&nbsp;deadband_max_voltage: float = 0.0</br>&#x2022;&nbsp;gradient_sag: float = 0.0</br>&#x2022;&nbsp;gradient_swell: float = 0.0</br>&#x2022;&nbsp;block_zone_voltage: float = 0.0 |
+
+##### 🔋 Emergency Ride-Through Modes
+
+| Control Mode           | Parameter                                                                                                                                                                          |
+|------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Frequency Ride-Through | &#x2022;&nbsp;high_must_trip: float</br>&#x2022;&nbsp;low_must_trip: float</br>&#x2022;&nbsp;high_momentary_cessation: float = None</br>&#x2022;&nbsp;low_momentary_cessation: float = None |
+| Voltage Ride-Through   | &#x2022;&nbsp;high_must_trip: float</br>&#x2022;&nbsp;low_must_trip: float</br>&#x2022;&nbsp;high_momentary_cessation: float = None</br>&#x2022;&nbsp;low_momentary_cessation: float = None |
 
 
 ---
