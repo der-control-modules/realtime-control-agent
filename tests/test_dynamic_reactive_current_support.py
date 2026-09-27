@@ -1,9 +1,7 @@
 """Unit tests for the MESA Dynamic Reactive Current Support mode."""
-import sys
-
 import pytest
 
-from conftest import FakeESS, FakeController, make_voltage_control
+from conftest import FakeESS, FakeController, make_voltage_control, assert_import_avoids_julia
 from rt_control.modes.reactive.dynamic_reactive_current_support import DynamicReactiveCurrentSupport
 from rt_control.modes import ReactiveMesaMode
 
@@ -79,4 +77,4 @@ def test_zero_reference_voltage_returns_zero():
 
 
 def test_no_julia_loaded():
-    assert 'julia' not in sys.modules
+    assert_import_avoids_julia('rt_control.modes.reactive.dynamic_reactive_current_support')

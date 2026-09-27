@@ -1,11 +1,11 @@
 """Unit tests for the MESA active-power modes (native control paths)."""
-import sys
 from datetime import datetime, timezone
 
 import pytest
 
 from conftest import (FakeESS, FakeController, make_voltage_control, make_frequency_response,
-                      make_regulation, make_generation_following, make_peak_limiting)
+                      make_regulation, make_generation_following, make_peak_limiting,
+                      assert_import_avoids_julia)
 from rt_control.util import SchedulePeriod, VariableIntervalTimeSeries
 from rt_control.modes import MesaMode
 
@@ -139,4 +139,12 @@ def test_frequency_watt_inactive_within_deadband():
 
 
 def test_no_julia_loaded():
-    assert 'julia' not in sys.modules
+    assert_import_avoids_julia(
+        'rt_control.modes.active.active_power_limit',
+        'rt_control.modes.active.active_power_response',
+        'rt_control.modes.active.active_power_smoothing',
+        'rt_control.modes.active.agc',
+        'rt_control.modes.active.charge_discharge_storage',
+        'rt_control.modes.active.frequency_watt',
+        'rt_control.modes.active.volt_watt',
+    )

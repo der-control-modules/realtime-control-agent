@@ -2,12 +2,11 @@
 VoltVar, WattVar). DynamicReactiveCurrentSupport and PowerFactorCorrection have their
 own dedicated test files."""
 import math
-import sys
 from datetime import datetime, timezone
 
 import pytest
 
-from conftest import FakeESS, FakeController, make_voltage_control
+from conftest import FakeESS, FakeController, make_voltage_control, assert_import_avoids_julia
 from rt_control.util import SchedulePeriod, VariableIntervalTimeSeries
 from rt_control.modes import ReactiveMesaMode
 
@@ -113,4 +112,9 @@ def test_watt_var_zero_power_zero_var():
 
 
 def test_no_julia_loaded():
-    assert 'julia' not in sys.modules
+    assert_import_avoids_julia(
+        'rt_control.modes.reactive.constant_var',
+        'rt_control.modes.reactive.fixed_power_factor',
+        'rt_control.modes.reactive.volt_var',
+        'rt_control.modes.reactive.watt_var',
+    )
