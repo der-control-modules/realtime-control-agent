@@ -1,10 +1,11 @@
 import logging
 import math
 
-from importlib.metadata import version
-if int(version('volttron').split('.')[0]) >= 10:
+from importlib.metadata import distribution, PackageNotFoundError
+try:
+    distribution('volttron-core')
     from volttron.utils import setup_logging
-else:
+except PackageNotFoundError:
     from volttron.platform.agent.utils import setup_logging
 
 from rt_control.modes import ReactiveMesaMode
