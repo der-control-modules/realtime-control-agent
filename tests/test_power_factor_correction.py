@@ -1,10 +1,10 @@
 """Unit tests for the MESA Power Factor Correction mode."""
 import math
-import sys
 
 import pytest
 
-from conftest import FakeESS, FakeController, make_peak_limiting, make_load_following
+from conftest import (FakeESS, FakeController, make_peak_limiting, make_load_following,
+                      assert_import_avoids_julia)
 from rt_control.modes.reactive.power_factor_correction import PowerFactorCorrection
 from rt_control.modes import ReactiveMesaMode
 from rt_control.util import VariableIntervalTimeSeries, SchedulePeriod
@@ -75,4 +75,4 @@ def test_missing_use_case_returns_zero():
 
 
 def test_no_julia_loaded():
-    assert 'julia' not in sys.modules
+    assert_import_avoids_julia('rt_control.modes.reactive.power_factor_correction')

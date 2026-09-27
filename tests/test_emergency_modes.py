@@ -1,8 +1,8 @@
 """Unit tests for the MESA emergency ride-through modes."""
-import sys
 from datetime import datetime, timezone
 
-from conftest import FakeESS, FakeController, make_voltage_control, make_frequency_response
+from conftest import (FakeESS, FakeController, make_voltage_control, make_frequency_response,
+                      assert_import_avoids_julia)
 from rt_control.modes import EmergencyMesaMode
 
 from rt_control.modes.emergency.voltage_ride_through import VoltageRideThrough
@@ -95,4 +95,7 @@ def test_frequency_in_band_passes_through():
 
 
 def test_no_julia_loaded():
-    assert 'julia' not in sys.modules
+    assert_import_avoids_julia(
+        'rt_control.modes.emergency.voltage_ride_through',
+        'rt_control.modes.emergency.frequency_ride_through',
+    )

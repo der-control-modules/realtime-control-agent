@@ -5,6 +5,8 @@ modes have a lazy `julia` fallback. Neither is installed in the plain test envir
 so this conftest installs lightweight sys.modules stubs BEFORE rt_control is imported.
 `julia` is deliberately left unstubbed so tests prove the native (non-Julia) paths run.
 """
+import os
+import subprocess
 import sys
 import types
 from datetime import datetime, timedelta, timezone
@@ -53,6 +55,22 @@ if 'volttron.client.logs' not in sys.modules:
     client_logs = types.ModuleType('volttron.client.logs')
     client_logs.setup_logging = lambda *a, **k: None
     sys.modules['volttron.client.logs'] = client_logs
+
+
+def assert_import_avoids_julia(*module_names):
+    """Import module_names in a fresh interpreter and assert julia never enters
+    sys.modules there. A subprocess is required: sys.modules is process-global,
+    so once one test imports a novel (Julia-backed) mode, 'julia' stays resident
+    for every later in-process check regardless of what it just imported.
+    """
+    tests_dir = os.path.dirname(os.path.abspath(__file__))
+    imports = '; '.join(f'import {name}' for name in module_names)
+    script = (f'import sys; sys.path.insert(0, {tests_dir!r}); import conftest; '
+              f'{imports}; sys.exit(1 if "julia" in sys.modules else 0)')
+    result = subprocess.run([sys.executable, '-c', script], capture_output=True,
+                            text=True, timeout=30)
+    assert result.returncode == 0, (
+        f'importing {module_names} pulled julia into sys.modules (stderr: {result.stderr})')
 
 
 class FakeESS:
